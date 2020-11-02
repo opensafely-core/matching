@@ -107,5 +107,14 @@ def common_variable_define(start_date):
                 },
             },
         ),
+        imd=patients.address_as_of(
+            start_date,
+            returning="index_of_multiple_deprivation",
+            round_to_nearest=100,
+            return_expectations={
+                "rate": "universal",
+                "category": {"ratios": {"100": 0.1, "200": 0.2, "300": 0.7}},
+            },
+        ),
     )
     return common_variables
