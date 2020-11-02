@@ -38,11 +38,15 @@ jobs:
     - name: Check codelists are up to date
       run: '[[ -z $(git status --porcelain codelists) ]] || (echo "Uncommitted changes to codelists detected, aborting" && exit 1)'
 
-    - name: Generate dummy data
-      run: cohortextractor generate_cohort --expectations-population=1000
+    - name: Generate case dummy data
+      run: cohortextractor generate_cohort --study-definition study_definition_covid --expectations-population=100
 
-    - name: Run model
-      run: docker run --mount source=${{ github.workspace }},dst=/workspace,type=bind docker.opensafely.org/stata-mp analysis/model.do
+    - name: Generate match population dummy data
+      # Must be larger than case pop - patient_IDs from case pop are dropped from match pop
+      run: cohortextractor generate_cohort --skip-existing --expectations-population=1000
+
+    - name: Run matching
+      run: python analysis/match_running.py
 
     - name: Create pre-release if on non-master branch
       if: github.ref != 'master'
