@@ -1,0 +1,104 @@
+CTV3Code,CTV3PreferredTermDesc,CTV3Source,Include,type
+7A093,Open pulmonary embolectomy,CTV3Map_Code_And_Term,1,pe
+F05..,Phlebitis and thrombophlebitis of intracranial sinuses,CTV3Map_Code_And_Term,1,other
+F051.,Cerebral venous sinus thrombosis,CTV3Map_Code_And_Term,1,other
+F0510,Cerebral venous thrombosis of cavernous sinus,CTV3_Children,1,other
+F0511,Thrombosis of superior longitudinal sinus,CTV3_Children,1,other
+F0512,Cerebral venous thrombosis of lateral sinus,CTV3_Children,1,other
+F0513,Thrombosis transverse sinus,CTV3_Children,1,other
+F051z,Thrombosis of central nervous system venous sinus NOS,CTV3Map_Code_And_Term,1,other
+F053.,Thrombophlebitis of central nervous system venous sinuses,CTV3Map_Code_And_Term,1,other
+F0530,Thrombophlebitis of cavernous sinus,CTV3Map_Code_And_Term,1,other
+F0531,Thrombophlebitis of superior longitudinal venous sinus,CTV3Map_Code_And_Term,1,other
+F05z.,Phlebitis or thrombophlebitis of CNS venous sinus NOS,CTV3Map_Code_And_Term,1,other
+G4010,Postoperative pulmonary embolus,CTV3Map_Code_And_Term,1,pe
+G676.,Non-pyogenic venous sinus thrombosis,CTV3Map_Code_And_Term,1,other
+G801.,(Deep vein phlebitis/thrombophleb leg) or (deep vein thromb),High_Level_SNOMED,1,dvt
+G8016,Thrombophlebitis of the femoral vein,CTV3Map_Code_And_Term,1,dvt
+G8017,Thrombophlebitis of the popliteal vein,CTV3Map_Code_And_Term,1,dvt
+G8018,Thrombophlebitis of the anterior tibial vein,CTV3Map_Code_And_Term,1,dvt
+G8019,Thrombophlebitis of the dorsalis pedis vein,CTV3Map_Code_And_Term,1,dvt
+G801A,Thrombophlebitis of the posterior tibial vein,CTV3Map_Code_And_Term,1,dvt
+G801B,Deep vein thrombophlebitis of the leg unspecified,CTV3Map_Code_And_Term,1,dvt
+G801z,Deep vein phlebitis and thrombophlebitis of the leg NOS,CTV3Map_Code_And_Term,1,dvt
+G80y.,(Phleb/thrombophleb iliac vein) or (oth phleb/thrombophleb),High_Level_SNOMED,1,dvt
+G80y4,Thrombophlebitis of the common iliac vein,CTV3Map_Code_And_Term,1,dvt
+G80y5,Thrombophlebitis of the internal iliac vein,CTV3Map_Code_And_Term,1,dvt
+G80y6,Thrombophlebitis of the external iliac vein,CTV3Map_Code_And_Term,1,dvt
+G80y7,Thrombophlebitis of the iliac vein unspecified,CTV3Map_Code_And_Term,1,dvt
+G80y8,Phlebitis and thrombophlebitis of the iliac vein NOS,CTV3Map_Code_And_Term,1,dvt
+G81..,Portal vein thrombosis,CTV3Map_Code_And_Term,1,other
+G822.,Embolism and thrombosis of the vena cava,CTV3Map_Code_And_Term,1,other
+J4202,Superior mesenteric vein thrombosis,CTV3Map_Code_And_Term,1,dvt
+L0964,Pulmonary embolism following abortive pregnancy,CTV3Map_Code_And_Term,1,pe
+L413.,Antenatal deep vein thrombosis,CTV3_Children,1,dvt
+L4130,Antenatal deep vein thrombosis unspecified,CTV3_Children,1,dvt
+L4131,Antenatal deep vein thrombosis - delivered,CTV3_Children,1,dvt
+L4132,Antenatal deep vein thrombosis with antenatal complication,CTV3_Children,1,dvt
+L413z,Antenatal deep vein thrombosis NOS,CTV3_Children,1,dvt
+L414.,DVT: [postnatal] or [obstetric phlegmasia alba dolens],CTV3_Children,1,dvt
+L4140,Postnatal deep vein thrombosis unspecified,CTV3_Children,1,dvt
+L4141,Postnatal deep vein thrombosis - delivered with p/n comp,CTV3_Children,1,dvt
+L4142,Postnatal deep vein thrombosis with postnatal complication,CTV3_Children,1,dvt
+L414z,Postnatal deep vein thrombosis NOS,CTV3_Children,1,dvt
+L417.,Obstetric cerebral venous thrombosis,CTV3_Children,1,dvt
+L4170,Cerebral venous thrombosis in pregnancy,CTV3_Children,1,dvt
+L4171,Cerebral venous thrombosis in the puerperium,CTV3_Children,1,dvt
+L43..,Obstetric pulmonary embolism,CTV3Map_Code_And_Term,1,pe
+L432.,Obstetric blood-clot pulmonary embolism,CTV3Map_Code_And_Term,1,pe
+L4320,Obstetric blood-clot pulmonary embolism unspecified,CTV3_Children,1,pe
+L4321,Obstetric blood-clot pulmonary embolism - delivered,CTV3_Children,1,pe
+L4322,Obstetric blood-clot pulm embolism - delivered with p/n comp,CTV3_Children,1,pe
+L4323,Obstetric blood-clot pulmonary embolism + a/n complication,CTV3_Children,1,pe
+L4324,Obstetric blood-clot pulmonary embolism + p/n complication,CTV3_Children,1,pe
+L432z,Obstetric blood-clot pulmonary embolism NOS,CTV3_Children,1,pe
+L43y0,Other obstetric pulmonary embolism unspecified,CTV3_Children,1,pe
+L43y1,Other obstetric pulmonary embolism - delivered,CTV3_Children,1,pe
+L43y2,Other obstetric pulmonary embolism - delivered + p/n comp,CTV3_Children,1,pe
+L43y3,Other obstetric pulmonary embolism with antenatal comp,CTV3_Children,1,pe
+L43y4,Other obstetric pulmonary embolism with postnatal comp,CTV3_Children,1,pe
+L43yz,Other obstetric pulmonary embolism NOS,CTV3Map_Code_And_Term,1,pe
+L43z.,Obstetric pulmonary embolism NOS,CTV3Map_Code_And_Term,1,pe
+L43z0,"Obstetric pulmonary embolism NOS, unspecified",CTV3Map_Code_And_Term,1,pe
+L43z1,Obstetric pulmonary embolism NOS - delivered,CTV3Map_Code_And_Term,1,pe
+L43z2,Obstetric pulmonary embolism NOS - delivered with p/n comp,CTV3_Children,1,pe
+L43z3,Obstetric pulmonary embolism NOS with antenatal complication,CTV3_Children,1,pe
+L43z4,Obstetric pulmonary embolism NOS with postnatal complication,CTV3_Children,1,pe
+Lyu64,[X]Other obstetric embolism,CTV3_Children,1,pe
+SP122,Postoperative deep vein thrombosis,CTV3Map_Code_And_Term,1,dvt
+X00Dj,Cerebral venous thrombosis of sagittal sinus,CTV3_Children,1,other
+X00Dk,Cerebral venous thrombosis of straight sinus,CTV3_Children,1,other
+X00Dl,Cerebral venous thrombosis of sigmoid sinus,CTV3_Children,1,other
+X00Dm,Cerebral venous thrombosis of cortical vein,CTV3_Children,1,other
+X012b,Operation for pulmonary embolism,High_Level_SNOMED,1,pe
+X012d,Transluminal fragmentation of pulmonary embolus,High_Level_SNOMED,1,pe
+X202x,Pulmonary thromboembolism,CTV3_Children,1,pe
+X202y,Acute massive pulmonary embolism,CTV3_Children,1,pe
+X202z,Subacute massive pulmonary embolism,CTV3_Children,1,pe
+X205e,Deep thrombophlebitis,High_Level_SNOMED,1,dvt
+X205m,Lower venous segment thrombosis,CTV3_Children,1,dvt
+X205n,Ileofemoral deep vein thrombosis,CTV3_Children,1,dvt
+X76Lg,Phlegmasia alba dolens,CTV3_Children,1,dvt
+X76Lh,Phlegmasia caerula dolens,CTV3_Children,1,dvt
+XE0Um,Pulmonary embolus,CTV3Map_Code_And_Term,1,pe
+XE0VY,Deep vein phlebitis and thrombophlebitis of the leg,CTV3Map_Code_And_Term,1,dvt
+XE0Va,Budd-Chiari syndrome,CTV3Map_Code_And_Term,1,other
+XE0XS,(Deep ven thromb leg)(nonpuer milk-leg)(deep thrombophl leg),CTV3_Children,1,dvt
+XE0xL,Postnatal deep vein thrombosis,CTV3_Children,1,dvt
+XE0xN,Other obstetric pulmonary embolism,CTV3_Children,1,pe
+Xa07G,Phlebitis and/or thrombophlebitis of iliac vein,CTV3Map_Code_And_Term,1,dvt
+Xa1aj,Phlegmasia alba dolens - obstetric,CTV3_Children,1,dvt
+Xa1oU,Thrombosis of inferior vena cava,CTV3Map_Code_And_Term,1,other
+Xa1oV,Thrombosis of superior vena cava,High_Level_SNOMED,1,other
+Xa6Yr,Axillary vein thrombosis,High_Level_SNOMED,1,dvt
+Xa9Bs,Deep vein thrombosis of lower limb,CTV3Map_Code_And_Term,1,dvt
+XaDyD,Thrombophlebitis of iliac vein,High_Level_SNOMED,1,dvt
+XaIIo,Deep vein thrombosis of leg related to air travel,CTV3Map_Code_And_Term,1,dvt
+XaJxo,Deep vein thrombosis of leg related to intravenous drug use,CTV3Map_Code_And_Term,1,dvt
+XaOYV,Recurrent pulmonary embolism,CTV3Map_Code_And_Term,1,pe
+XaQIV,Deep venous thrombosis of peroneal vein,CTV3Map_Code_And_Term,1,dvt
+XaZ43,Recurrent deep vein thrombosis,CTV3Map_Code_And_Term,1,dvt
+XaZht,Thrombosis of subclavian vein,High_Level_SNOMED,1,other
+Xaa2K,Thrombosis of internal jugular vein,High_Level_SNOMED,1,other
+Xacvd,Unprovoked deep vein thrombosis,CTV3Map_Code_And_Term,1,dvt
+Xacve,Provoked deep vein thrombosis,CTV3Map_Code_And_Term,1,dvt
