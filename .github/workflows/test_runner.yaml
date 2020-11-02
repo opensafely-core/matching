@@ -47,26 +47,3 @@ jobs:
 
     - name: Run matching
       run: python analysis/match_running.py
-
-    - name: Create pre-release if on non-master branch
-      if: github.ref != 'master'
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        title: "Development build of ${{ steps.extract_branch.outputs.branch }}"
-        automatic_release_tag: draft-assets-for-${{ steps.extract_branch.outputs.branch }}
-        draft: false
-        prerelease: true
-        files: |
-          ./output/input*csv
-    - name: Create full release if on master branch
-      if: github.ref == 'master' || github.pull_request.merged == true
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        title: "Latest production build"
-        automatic_release_tag: "latest"
-        draft: false
-        prerelease: false
-        files: |
-          ./output/input*csv
