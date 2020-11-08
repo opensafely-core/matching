@@ -20,7 +20,7 @@ pneumonia = {
         "previous_stroke_hospital": "before",
     },
 }
-match(pneumonia)
+match(**pneumonia)
 
 
 control_2019 = {
@@ -43,7 +43,7 @@ control_2019 = {
         "previous_stroke_hospital": "before",
     },
 }
-match(control_2019)
+match(**control_2019)
 
 
 control_2020 = {
@@ -66,4 +66,4 @@ control_2020 = {
         "previous_stroke_hospital": "before",
     },
 }
-match(control_2020)
+match(**control_2020)

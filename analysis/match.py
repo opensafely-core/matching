@@ -4,24 +4,33 @@ import random
 from datetime import datetime
 import pandas as pd
 
+NOT_PREVIOUSLY_MATCHED = -9
 
-def import_csvs(match_dict):
+
+def import_csvs(
+    case_csv,
+    match_csv,
+    match_variables,
+    date_exclusion_variables,
+    index_date_variable,
+    replace_match_index_date_with_case=None,
+):
     """
     Imports the two csvs specified under case_csv and match_csv.
     Also sets the correct data types for the matching variables.
     """
     cases = pd.read_csv(
-        os.path.join("output", f"{match_dict['case_csv']}.csv"),
+        os.path.join("output", f"{case_csv}.csv"),
         index_col="patient_id",
     )
     matches = pd.read_csv(
-        os.path.join("output", f"{match_dict['match_csv']}.csv"),
+        os.path.join("output", f"{match_csv}.csv"),
         index_col="patient_id",
     )
 
     ## Set data types for matching variables
     month_only = []
-    for var, match_type in match_dict["match_variables"].items():
+    for var, match_type in match_variables.items():
         if match_type == "category":
             cases[var] = cases[var].astype("category")
             matches[var] = matches[var].astype("category")
@@ -33,28 +42,37 @@ def import_csvs(match_dict):
                 matches[var].str.slice(start=5, stop=7).astype("category")
             )
     for var in month_only:
-        del match_dict["match_variables"][var]
-        match_dict["match_variables"][f"{var}_m"] = "category"
+        del match_variables[var]
+        match_variables[f"{var}_m"] = "category"
 
     ## Format exclusion variables as dates
-    if "date_exclusion_variables" in match_dict:
-        for var in match_dict["date_exclusion_variables"]:
+    if date_exclusion_variables is not None:
+        for var in date_exclusion_variables:
             cases[var] = pd.to_datetime(cases[var])
             matches[var] = pd.to_datetime(matches[var])
-            cases[match_dict["index_date_variable"]] = pd.to_datetime(
-                cases[match_dict["index_date_variable"]]
-            )
-            if "replace_match_index_date_with_case" not in match_dict:
-                matches[match_dict["index_date_variable"]] = pd.to_datetime(
-                    matches[match_dict["index_date_variable"]]
+            cases[index_date_variable] = pd.to_datetime(cases[index_date_variable])
+            if replace_match_index_date_with_case is None:
+                matches[index_date_variable] = pd.to_datetime(
+                    matches[index_date_variable]
                 )
 
     return cases, matches
 
 
 def add_variables(cases, matches):
+    """
+    Adds the following variables to the case and match tables:
+    set_id - in the final table, this will be identify groups of matched cases
+             and matches. Here it is set to the patient ID for cases, and a
+             magic number denoting that a person has not been previously matched
+             for matches.
+    ...and these variables to the match table:
+    randomise - this is used to randomly sort when selecting which matches to use.
+                A random seed is set so that the same matches are picked between
+                runs on the same input CSVs.
+    """
     cases["set_id"] = cases.index
-    matches["set_id"] = -9
+    matches["set_id"] = NOT_PREVIOUSLY_MATCHED
     matches["randomise"] = 1
     random.seed(999)
     matches["randomise"] = matches["randomise"].apply(lambda x: x * random.random())
@@ -65,7 +83,7 @@ def get_bool_index(match_type, value, match_var, matches):
     """
     Compares the value in the given case variable to the variable in
     the match dataframe, to generate a boolean index. Comparisons vary
-    accoding to the specification in the match_dict.
+    accoding to the matching specification.
     """
     if match_type == "category":
         bool_index = matches[match_var] == value
@@ -105,7 +123,7 @@ def get_eligible_matches(case_row, matches, match_variables, indices):
         variable_bool = indices[match_var][case_row[match_var]]
         eligible_matches = eligible_matches & variable_bool
 
-    not_previously_matched = matches["set_id"] == -9
+    not_previously_matched = matches["set_id"] == NOT_PREVIOUSLY_MATCHED
     eligible_matches = eligible_matches & not_previously_matched
     return eligible_matches
 
@@ -127,28 +145,33 @@ def date_exclusions(df1, date_exclusion_variables, df2, index_date):
     return exclusions
 
 
-def greedily_pick_matches(match_dict, matched_rows, case_row):
+def greedily_pick_matches(
+    matches_per_case,
+    matched_rows,
+    case_row,
+    closest_match_columns=None,
+):
     """
-    Cuts the eligible_matches list to the number of matches specified in
-    the match_dict. This is a greedy matching method, so if closest_match_columns
-    are specified, it sorts on those variables to get the closest available matches
-    for that case. It always also sorts on random variable.
+    Cuts the eligible_matches list to the number of matches specified. This is a
+    greedy matching method, so if closest_match_columns are specified, it sorts
+    on those variables to get the closest available matches for that case. It
+    always also sorts on random variable.
     """
     sort_columns = []
-    if "closest_match_columns" in match_dict:
-        for var in match_dict["closest_match_columns"]:
+    if closest_match_columns is not None:
+        for var in closest_match_columns:
             matched_rows[f"{var}_delta"] = abs(matched_rows[var] - case_row[var])
             sort_columns.append(f"{var}_delta")
 
     sort_columns.append("randomise")
     matched_rows = matched_rows.sort_values(sort_columns)
-    matched_rows = matched_rows.head(match_dict["matches_per_case"])
+    matched_rows = matched_rows.head(matches_per_case)
     return matched_rows.index
 
 
 def get_date_offset(offset_str):
     """
-    Parses the string given by match_dict["replace_match_index_date_with_case"]
+    Parses the string given by replace_match_index_date_with_case
     to determine the unit and lenght of offset.
     Returns a pr.DateOffset of the appropriate length.
     """
@@ -168,7 +191,16 @@ def get_date_offset(offset_str):
     return offset
 
 
-def match(match_dict):
+def match(
+    case_csv,
+    match_csv,
+    matches_per_case,
+    match_variables,
+    index_date_variable,
+    closest_match_columns=None,
+    date_exclusion_variables=None,
+    replace_match_index_date_with_case=None,
+):
     """
     Wrapper function that calls functions to:
     - import data
@@ -183,7 +215,7 @@ def match(match_dict):
     """
     report_path = os.path.join(
         "output",
-        f"matching_report_{match_dict['match_csv']}.txt",
+        f"matching_report_{match_csv}.txt",
     )
 
     def matching_report(text_to_write, erase=False):
@@ -192,18 +224,27 @@ def match(match_dict):
         with open(report_path, "a") as txt:
             for line in text_to_write:
                 txt.writelines(f"{line}\n")
+                print(line)
             txt.writelines("\n")
+            print("\n")
 
     matching_report(
         [f"Matching started at: {datetime.now()}"],
         erase=True,
     )
 
-    ## Deep copy match_dict
-    match_dict = copy.deepcopy(match_dict)
+    ## Deep copy match_variables
+    match_variables = copy.deepcopy(match_variables)
 
     ## Import_data
-    cases, matches = import_csvs(match_dict)
+    cases, matches = import_csvs(
+        case_csv,
+        match_csv,
+        match_variables,
+        date_exclusion_variables,
+        index_date_variable,
+        replace_match_index_date_with_case,
+    )
 
     matching_report(
         [
@@ -231,22 +272,19 @@ def match(match_dict):
     ## Add set_id and randomise variables
     cases, matches = add_variables(cases, matches)
 
-    indices = pre_calculate_indices(cases, matches, match_dict["match_variables"])
+    indices = pre_calculate_indices(cases, matches, match_variables)
     matching_report([f"Completed pre-calculating indices at {datetime.now()}"])
 
-    if "index_date_variable" in match_dict:
-        index_date_var = match_dict["index_date_variable"]
+    if replace_match_index_date_with_case is not None:
+        offset_str = replace_match_index_date_with_case
+        date_offset = get_date_offset(replace_match_index_date_with_case)
 
-    if "replace_match_index_date_with_case" in match_dict:
-        offset_str = match_dict["replace_match_index_date_with_case"]
-        date_offset = get_date_offset(offset_str)
-
-    if "date_exclusion_variables" in match_dict:
+    if date_exclusion_variables is not None:
         case_exclusions = date_exclusions(
             cases,
-            match_dict["date_exclusion_variables"],
+            date_exclusion_variables,
             cases,
-            index_date_var,
+            index_date_variable,
         )
         cases = cases.loc[~case_exclusions]
         matching_report(
@@ -259,55 +297,65 @@ def match(match_dict):
         )
 
     ## Sort cases by index date
-    cases = cases.sort_values(index_date_var)
+    cases = cases.sort_values(index_date_variable)
 
     for case_id, case_row in cases.iterrows():
         ## Get eligible matches
         eligible_matches = get_eligible_matches(
-            case_row, matches, match_dict["match_variables"], indices
+            case_row, matches, match_variables, indices
         )
         matched_rows = matches.loc[eligible_matches]
 
         ## Index date based match exclusions (faster to do this after get_eligible_matches)
-        if "date_exclusion_variables" in match_dict:
+        if date_exclusion_variables is not None:
             exclusions = date_exclusions(
                 matched_rows,
-                match_dict["date_exclusion_variables"],
+                date_exclusion_variables,
                 case_row,
-                index_date_var,
+                index_date_variable,
             )
             matched_rows = matched_rows.loc[~exclusions]
 
         ## Pick random matches
-        matched_rows = greedily_pick_matches(match_dict, matched_rows, case_row)
+        matched_rows = greedily_pick_matches(
+            matches_per_case,
+            matched_rows,
+            case_row,
+            closest_match_columns,
+        )
 
         ## Report number of matches for each case
         num_matches = len(matched_rows)
         cases.loc[case_id, "match_counts"] = num_matches
 
         ## Label matches with case ID if there are enough
-        if num_matches == match_dict["matches_per_case"]:
+        if num_matches == matches_per_case:
             matches.loc[matched_rows, "set_id"] = case_id
 
         ## Set index_date of the match where needed
-        if "replace_match_index_date_with_case" in match_dict:
+        if replace_match_index_date_with_case is not None:
             if offset_str == "no_offset":
-                matches.loc[matched_rows, index_date_var] = case_row[index_date_var]
+                matches.loc[matched_rows, index_date_variable] = case_row[
+                    index_date_variable
+                ]
             elif offset_str.split("_")[2] == "earlier":
-                matches.loc[matched_rows, index_date_var] = (
-                    case_row[index_date_var] - date_offset
+
+                matches.loc[matched_rows, index_date_variable] = (
+                    case_row[index_date_variable] - date_offset
                 )
             elif offset_str.split("_")[2] == "later":
-                matches.loc[matched_rows, index_date_var] = (
-                    case_row[index_date_var] + date_offset
+                matches.loc[matched_rows, index_date_variable] = (
+                    case_row[index_date_variable] + date_offset
                 )
 
     ## Drop unmatched cases/matches
-    matched_cases = cases.loc[cases["match_counts"] == match_dict["matches_per_case"]]
-    matched_matches = matches.loc[matches["set_id"] != -9]
+    matched_cases = cases.loc[cases["match_counts"] == matches_per_case]
+    matched_matches = matches.loc[matches["set_id"] != NOT_PREVIOUSLY_MATCHED]
 
-    ## Describe population differences (returns empty list if no closest_match variables are specified)
-    scalar_comparisons = compare_populations(matched_cases, matched_matches, match_dict)
+    ## Describe population differences
+    scalar_comparisons = compare_populations(
+        matched_cases, matched_matches, closest_match_columns
+    )
 
     matching_report(
         [
@@ -325,20 +373,23 @@ def match(match_dict):
     matched_cases.to_csv(
         os.path.join(
             "output",
-            f"{match_dict['case_csv']}_matched_{match_dict['match_csv']}.csv",
+            f"{case_csv}_matched_{match_csv}.csv",
         )
     )
-    matched_matches.to_csv(
-        os.path.join("output", f"{match_dict['match_csv']}_matched.csv")
-    )
-
-    print(open(report_path).read())
+    matched_matches.to_csv(os.path.join("output", f"{match_csv}_matched.csv"))
 
 
-def compare_populations(matched_cases, matched_matches, match_dict):
+def compare_populations(matched_cases, matched_matches, closest_match_columns):
+    """
+    Takes the list of closest_match_columns and describes each of them for the matched
+    case and matched control population, so that their similarity can be checked.
+    Returns a list strings corresponding to the rows of the describe() output, to be
+    passed to matching_report(). Returns empty list if no closest_match_columns are
+    specified.
+    """
     scalar_comparisons = []
-    if "closest_match_columns" in match_dict:
-        for var in match_dict["closest_match_columns"]:
+    if closest_match_columns is not None:
+        for var in closest_match_columns:
             scalar_comparisons.extend(
                 [
                     f"\n{var} comparison:",
