@@ -1,0 +1,37 @@
+icd,description,type
+I60,Subarachnoid haemorrhage,haemorrhagic
+I600,Subarachnoid haemorrhage from carotid siphon and bifurcation,haemorrhagic
+I601,Subarachnoid haemorrhage from middle cerebral artery,haemorrhagic
+I602,Subarachnoid haemorrhage from anterior communicating artery,haemorrhagic
+I603,Subarachnoid haemorrhage from posterior communicating artery,haemorrhagic
+I604,Subarachnoid haemorrhage from basilar artery,haemorrhagic
+I605,Subarachnoid haemorrhage from vertebral artery,haemorrhagic
+I606,Subarachnoid haemorrhage from other intracranial arteries,haemorrhagic
+I607,"Subarachnoid haemorrhage from intracranial artery, unspecified",haemorrhagic
+I608,Other subarachnoid haemorrhage,haemorrhagic
+I609,"Subarachnoid haemorrhage, unspecified",haemorrhagic
+I61,Intracerebral haemorrhage,haemorrhagic
+I610,"Intracerebral haemorrhage in hemisphere, subcortical",haemorrhagic
+I611,"Intracerebral haemorrhage in hemisphere, cortical",haemorrhagic
+I612,"Intracerebral haemorrhage in hemisphere, unspecified",haemorrhagic
+I613,Intracerebral haemorrhage in brain stem,haemorrhagic
+I614,Intracerebral haemorrhage in cerebellum,haemorrhagic
+I615,"Intracerebral haemorrhage, intraventricular",haemorrhagic
+I616,"Intracerebral haemorrhage, multiple localized",haemorrhagic
+I618,Other intracerebral haemorrhage,haemorrhagic
+I619,"Intracerebral haemorrhage, unspecified",haemorrhagic
+I62,Other nontraumatic intracranial haemorrhage,haemorrhagic
+I620,Subdural haemorrhage (acute)(nontraumatic),haemorrhagic
+I621,Nontraumatic extradural haemorrhage,haemorrhagic
+I629,"Intracranial haemorrhage (nontraumatic), unspecified",haemorrhagic
+I63,Cerebral infarction,ischaemic 
+I630,Cerebral infarction due to thrombosis of precerebral arteries,ischaemic 
+I631,Cerebral infarction due to embolism of precerebral arteries,ischaemic 
+I632,Cerebral infarction due to unspecified occlusion or stenosis of precerebral arteries,ischaemic 
+I633,Cerebral infarction due to thrombosis of cerebral arteries,ischaemic 
+I634,Cerebral infarction due to embolism of cerebral arteries,ischaemic 
+I635,Cerebral infarction due to unspecified occlusion or stenosis of cerebral arteries,ischaemic 
+I636,"Cerebral infarction due to cerebral venous thrombosis, nonpyogenic",ischaemic 
+I638,Other cerebral infarction,ischaemic 
+I639,"Cerebral infarction, unspecified",ischaemic 
+I64,"Stroke, not specified as haemorrhage or infarction",unspecified

@@ -1,0 +1,189 @@
+CTV3ID,readterm/CTV3PreferredTermDesc,type
+A94y6,Rupture of syphilitic cerebral aneurysm,haemorrhagic
+F4K7.,Retrobulbar haemorrhage,haemorrhagic
+Fyu56,[X]Other lacunar syndromes,unspecified
+Fyu57,[X]Other vascular syndroms/brain in cerebrovasculr diseases,unspecified
+G6...,Cerebrovascular disease,unspecified
+G600.,Ruptured berry aneurysm,haemorrhagic
+G601.,Subarachnoid haemorrhage from carotid siphon and bifurcation,haemorrhagic
+G606.,Subarachnoid haemorrhage from vertebral artery,haemorrhagic
+G60z.,Subarachnoid haemorrhage NOS,haemorrhagic
+G61..,Intracerebral haemorrhage (& [cerebrovasc accident due to]),haemorrhagic
+G610.,Cortical haemorrhage,haemorrhagic
+G611.,Internal capsule haemorrhage,haemorrhagic
+G612.,Basal ganglia haemorrhage,haemorrhagic
+G613.,Cerebellar haemorrhage,haemorrhagic
+G614.,Pontine haemorrhage,haemorrhagic
+G615.,Bulbar haemorrhage,haemorrhagic
+G616.,External capsule haemorrhage,haemorrhagic
+G617.,"Intracerebral haemorrhage, intraventricular",haemorrhagic
+G618.,"Intracerebral haemorrhage, multiple localised",haemorrhagic
+G61z.,Intracerebral haemorrhage NOS,haemorrhagic
+G62..,Other and unspecified intracranial haemorrhage,haemorrhagic
+G62z.,Intracranial haemorrhage NOS,haemorrhagic
+G63..,Precerebral: [arterial occlusion][arterial stenos][infarct],ischaemic
+G630.,Basilar artery occlusion,ischaemic
+G632.,Vertebral artery occlusion,ischaemic
+G633.,Multiple and bilateral precerebral arterial occlusion,ischaemic
+G63y.,Other precerebral artery occlusion,ischaemic
+G63y0,Cerebral infarct due to thrombosis of precerebral arteries,ischaemic
+G63y1,Cerebral infarction due to embolism of precerebral arteries,ischaemic
+G63z.,Precerebral artery occlusion NOS,ischaemic
+G64..,Cereb art occl (& [cerebvasc acc][stroke]) or (cereb infarc),ischaemic
+G640.,Cerebral thrombosis,ischaemic
+G6400,Cerebral infarction due to thrombosis of cerebral arteries,ischaemic
+G641.,Cerebral embolus,ischaemic
+G6410,Cerebral infarction due to embolism of cerebral arteries,ischaemic
+G64z.,Infarct (& [cerebell] or [cerebral NOS] or [brainstem NOS]),ischaemic
+G64z1,Wallenberg syndrome,ischaemic
+G650.,Basilar artery syndrome,ischaemic
+G651.,Vertebral artery syndrome,ischaemic
+G6510,Vertebrobasilar artery syndrome,ischaemic
+G653.,Carotid artery syndrome hemispheric,ischaemic
+G654.,Multiple and bilateral precerebral artery syndromes,ischaemic
+G66..,CVA - cerebrovascular accident (& unspecified [& stroke]),unspecified
+G660.,Middle cerebral artery syndrome,ischaemic
+G661.,Anterior cerebral artery syndrome,ischaemic
+G662.,Posterior cerebral artery syndrome,ischaemic
+G663.,Brainstem stroke syndrome,unspecified
+G664.,Cerebellar stroke syndrome,unspecified
+G667.,Left sided cerebral hemisphere cerebrovascular accident,unspecified
+G668.,Right sided cerebral hemisphere cerebrovascular accident,unspecified
+G6760,"Cereb infarct due cerebral venous thrombosis, non-pyogenic",ischaemic
+G677.,Occlusion/stenosis cerebral arts not result cerebral infarct,ischaemic
+G6770,Occlusion and stenosis of middle cerebral artery,ischaemic
+G6771,Occlusion and stenosis of anterior cerebral artery,ischaemic
+G6772,Occlusion and stenosis of posterior cerebral artery,ischaemic
+G6773,Occlusion and stenosis of cerebellar arteries,ischaemic
+G6774,Occlusion+stenosis of multiple and bilat cerebral arteries,ischaemic
+G6X..,[X]Cerebrl infarctn due/unspcf occlusn or sten/cerebrl artrs,ischaemic
+Gyu60,[X]Subarachnoid haemorrhage from other intracranial arteries,haemorrhagic
+Gyu61,[X]Other subarachnoid haemorrhage,haemorrhagic
+Gyu62,[X]Other intracerebral haemorrhage,haemorrhagic
+Gyu63,[X]Cerebrl infarctn due/unspcf occlusn or sten/cerebrl artrs,ischaemic
+Gyu64,[X]Other cerebral infarction,ischaemic
+Gyu65,[X]Occlusion and stenosis of other precerebral arteries,ischaemic
+Gyu66,[X]Occlusion and stenosis of other cerebral arteries,ischaemic
+Gyu6E,"[X]Subarachnoid haemorrh from intracranial artery, unspecif",haemorrhagic
+Gyu6F,"[X]Intracerebral haemorrhage in hemisphere, unspecified",haemorrhagic
+Gyu6G,[X]Cereb infarct due unsp occlus/stenos precerebr arteries,ischaemic
+L440.,Cerebrovasc disord in puerperium (& [CVA - cerebrovasc acc]),unspecified
+L4400,Puerperal cerebrovascular disorder unspecified,unspecified
+L4401,Puerperal cerebrovascular disorder - delivered,unspecified
+L4402,Puerperal cerebrovascular disorder - delivered with p/n comp,unspecified
+L4403,Puerperal cerebrovascular disorder with antenatal comp,unspecified
+L4404,Puerperal cerebrovascular disorder with postnatal comp,unspecified
+L440z,Puerperal cerebrovascular disorder NOS,unspecified
+Q200.,Subdural and cerebral haemorrhage due to birth trauma,haemorrhagic
+Q411.,Perinatal intraventricular haemorrhage,haemorrhagic
+Q412.,Perinatal subarachnoid haemorrhage,haemorrhagic
+Q4120,Subarachnoid haemorrhage due to birth injury,haemorrhagic
+S62..,(Haemor foll inj: [named variants]) or (traum cerebral haem),haemorrhagic
+S620.,Haemorrh: [closed traum subarach] or [mid mening follow inj],haemorrhagic
+S6200,Subarachnoid h'ge inj no open intracran wound + unspec consc,haemorrhagic
+S6201,Subarachnoid h'ge inj no open intracran wnd+no loss consc,haemorrhagic
+S6202,Subarachnoid h'ge inj no open intracran wnd+<1hr loss consc,haemorrhagic
+S6203,Subarachnoid h'ge inj no open intracran wound + 1-24hr LOC,haemorrhagic
+S6204,Subarachnoid h'ge inj no open intracran wnd+>24 LOC+recovery,haemorrhagic
+S6205,Subarach h'ge inj no open intracran wnd+>24hrs LOC-restored,haemorrhagic
+S6206,Subarach h'ge inj no open intracran wnd+LOC unspec duration,haemorrhagic
+S620z,Subarach h'ge inj no open intracran wnd + concussion unspec,haemorrhagic
+S621.,Open traumatic subarachnoid haemorrhage,haemorrhagic
+S6210,Subarachnoid h'ge inj + open intracran wound + unspec consc,haemorrhagic
+S6211,Subarachnoid h'ge inj + open intracranial wound + no LOC,haemorrhagic
+S6212,Subarachnoid h'ge inj + open intracran wound+<1hr loss consc,haemorrhagic
+S6213,Subarachnoid h'ge inj + open intracran wnd+1-24hr loss consc,haemorrhagic
+S6214,Subarach h'ge inj + open intracran wnd +>24hr LOC + recovery,haemorrhagic
+S6215,Subarach h'ge inj + open intracran wnd+>24hr LOC -restored,haemorrhagic
+S6216,Subarach h'ge inj + open intracran wnd+LOC unspec duration,haemorrhagic
+S621z,Subarachnoid h'ge inj + open intracran wnd+concussion unspec,haemorrhagic
+S62z.,Cerebral haemorrhage following injury NOS,haemorrhagic
+S63..,Other cerebral haemorrhage following injury,haemorrhagic
+S6300,Oth cerebral h'ge inj no open intracran wnd+unspec consc,haemorrhagic
+S6301,Oth cerebral h'ge inj no open intracranial wnd+no loss consc,haemorrhagic
+S6302,Oth cerebral h'ge inj no open intracran wnd+<1hr loss consc,haemorrhagic
+S6303,Oth cerebral h'ge inj no open intracran wnd+1-24hr LOC,haemorrhagic
+S6304,Oth cereb h'ge inj no open intracran wnd+>24hr LOC +recovery,haemorrhagic
+S6305,Oth cereb h'ge inj no open intracran wnd+>24hr LOC -restored,haemorrhagic
+S6306,Oth cereb h'ge inj no open intracran wnd+LOC unspec duration,haemorrhagic
+S630z,Oth cereb h'ge inj no open intracran wnd+concussion unspec,haemorrhagic
+S631.,Other cerebral h'ge after injury + open intracranial wound,haemorrhagic
+S6310,Oth cerebral h'ge inj + open intracran wnd + unspec consc,haemorrhagic
+S6311,Oth cerebral h'ge inj + open intracranial wnd+no loss consc,haemorrhagic
+S6312,Oth cerebral h'ge inj + open intracran wnd+<1hr loss consc,haemorrhagic
+S6313,Oth cerebral h'ge inj + open intracran wnd+1-24hr loss consc,haemorrhagic
+S6314,Oth cereb h'ge inj + open intracran wnd+>24hr LOC + recovery,haemorrhagic
+S6315,Oth cereb h'ge inj + open intracran wnd+>24hr LOC -restored,haemorrhagic
+S6316,Oth cereb h'ge inj + open intracran wnd+LOC unspec duration,haemorrhagic
+S631z,Oth cereb h'ge inj + open intracran wnd+concussion unspec,haemorrhagic
+S63z.,Other cerebral haemorrhage following injury NOS,haemorrhagic
+X00D1,Cerebrovascular accident,unspecified
+X00D3,CVA - cerebral artery occlusion,ischaemic
+X00D4,Infarction - precerebral,ischaemic
+X00D5,Anterior cerebral circulation infarction,ischaemic
+X00D6,Total anterior cerebral circulation infarction,ischaemic
+X00D7,Partial anterior cerebral circulation infarction,ischaemic
+X00D8,Posterior cerebral circulation infarction,ischaemic
+X00D9,Brainstem infarction NOS,ischaemic
+X00DA,Lacunar infarction,ischaemic
+X00DB,Pure motor lacunar infarction,ischaemic
+X00DC,Pure sensory lacunar infarction,ischaemic
+X00DD,Pure sensorimotor lacunar infarction,ischaemic
+X00DE,Lacunar ataxic hemiparesis,unspecified
+X00Df,Subarachnoid haemorrhage from rupt arteriovenous malformat,haemorrhagic
+X00DG,Multi-infarct state,ischaemic
+X00DI,Haemorrhagic cerebral infarction,haemorrhagic
+X00DJ,Anterior cerebral circulation haemorrhagic infarction,haemorrhagic
+X00DK,Posterior cerebral circulation haemorrhagic infarction,haemorrhagic
+X00DL,Massive supratentorial cerebral haemorrhage,haemorrhagic
+X00DM,Lobar cerebral haemorrhage,haemorrhagic
+X00DN,Subcortical cerebral haemorrhage,haemorrhagic
+X00DO,Thalamic haemorrhage,haemorrhagic
+X00DP,Lacunar haemorrhage,haemorrhagic
+X00DQ,Brainstem haemorrhage,haemorrhagic
+X00DR,Stroke of uncertain pathology,unspecified
+X00DS,Anterior circulation stroke of uncertain pathology,unspecified
+X00DT,Posterior circulation stroke of uncertain pathology,unspecified
+X204F,Ruptured cerebral aneurysm,haemorrhagic
+Xa00I,Occipital cerebral infarction,ischaemic
+Xa00J,Cerebellar infarction,ischaemic
+Xa00K,Brainstem infarction,ischaemic
+XA0B9,Middle meningeal haemorrhage following injury,haemorrhagic
+XA0BG,Traumatic intracerebral haemorrhage,haemorrhagic
+Xa0Bj,Intracerebellar and posterior fossa haemorrhage,haemorrhagic
+Xa0kZ,Cerebral infarction,ischaemic
+Xa0N3,Ruptured cerebral arteriovenous malformation,haemorrhagic
+Xa0N7,Angiogram-negative subarachnoid haemorrhage,haemorrhagic
+Xa0NJ,Ruptured aneurysm of anterior cerebral artery,haemorrhagic
+Xa0NK,Ruptured aneurysm of middle cerebral artery,haemorrhagic
+Xa0NN,Ruptured aneurysm of posterior cerebral artery,haemorrhagic
+Xa0NO,Ruptured aneurysm of anterior communicating artery,haemorrhagic
+Xa0NQ,Ruptured aneurysm of posterior communicating artery,haemorrhagic
+Xa0NR,Ruptured aneurysm of basilar artery,haemorrhagic
+Xa0NS,Ruptured aneurysm of posterior inferior cerebellar artery,haemorrhagic
+Xa0NV,Rupturd intern carotid-anter communic art zone aneurysm,haemorrhagic
+Xa0NW,Rupt intern carotid-posterior communicat art zone aneurysm,haemorrhagic
+Xa0NX,Ruptured internal carotid bifurcation aneurysm,haemorrhagic
+Xa1hE,Extension of cerebrovascular accident,unspecified
+Xa3fV,Cerebral artery occlusion NOS,ischaemic
+XaB4Z,Multiple lacunar infarcts,unspecified
+XaBEC,Left sided cerebral infarction,ischaemic
+XaBED,Right sided cerebral infarction,ischaemic
+XaBM4,"Left sided intracerebral haemorrhage, unspecified",haemorrhagic
+XaBM5,"Right sided intracerebral haemorrhage, unspecified",haemorrhagic
+XaEGq,Stroke NOS,unspecified
+XaeUO,Locked in syndrome,unspecified
+XaIRJ,Cereb autosom dominant arteriop subcort infarcts leukoenceph,ischaemic
+XaJgQ,Infarction of basal ganglia,ischaemic
+XaQbK,Pure motor lacunar syndrome,ischaemic
+XaQbM,Pure sensory lacunar syndrome,ischaemic
+XE0VF,Cerebral parenchymal haemorrhage,haemorrhagic
+XE0VI,Cerebral arterial occlusion,ischaemic
+XE0VJ,Cerebral infarction NOS,ischaemic
+XE0Wy,Cerebral haemorrhage NOS,haemorrhagic
+XE0X2,(Cereb infarc)(cerebrovas acc)(undef stroke/CVA)(stroke NOS),haemorrhagic
+XE1m2,Traumatic intracranial haemorrhage,haemorrhagic
+XE2aB,Stroke and cerebrovascular accident unspecified,unspecified
+XE2bF,Spontaneous subarachnoid haemorrhage,haemorrhagic
+XM0rV,Cerebral haemorrhage,haemorrhagic
+XM1PL,Stroke in the puerperium,unspecified

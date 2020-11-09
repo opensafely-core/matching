@@ -1,0 +1,19 @@
+ICD_code,diag_desc,type
+I26,Pulmonary embolism,pe
+I260,Pulmonary embolism with mention of acute cor pulmonale,pe
+I269,Pulmonary embolism without mention of acute cor pulmonale,pe
+I80,Phlebitis and thrombophlebitis,dvt
+I800,Phlebitis and thrombophlebitis of superficial vessels of lower extremities,dvt
+I801,Phlebitis and thrombophlebitis of femoral vein,dvt
+I802,Phlebitis and thrombophlebitis of other deep vessels of lower extremities,dvt
+I803,"Phlebitis and thrombophlebitis of lower extremities, unspecified",dvt
+I808,Phlebitis and thrombophlebitis of other sites,dvt
+I809,Phlebitis and thrombophlebitis of unspecified site,dvt
+I81,Portal vein thrombosis,other
+I82,Other venous embolism and thrombosis,other
+I820,Budd-Chiari syndrome,other
+I821,Thrombophlebitis migrans,dvt
+I822,Embolism and thrombosis of vena cava,other
+I823,Embolism and thrombosis of renal vein,other
+I828,Embolism and thrombosis of other specified veins,other
+I829,Embolism and thrombosis of unspecified vein,other
