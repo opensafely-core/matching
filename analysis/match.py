@@ -220,7 +220,7 @@ def match(
     """
     report_path = os.path.join(
         "output",
-        f"matching_report_{match_csv}.txt",
+        f"matching_report_{match_csv.replace('input_', '')}.txt",
     )
 
     def matching_report(text_to_write, erase=False):
@@ -375,13 +375,14 @@ def match(
     )
 
     ## Write to csvs
+    case_name = case_csv.replace("input_", "")
+    match_name = match_csv.replace("input_", "")
     matched_cases.to_csv(
-        os.path.join(
-            "output",
-            f"{case_csv}_matched_{match_csv}.csv",
-        )
+        os.path.join("output", f"{case_name}_only_matched_to_{match_name}.csv")
     )
-    matched_matches.to_csv(os.path.join("output", f"{match_csv}_matched.csv"))
+    matched_matches.to_csv(os.path.join("output", f"{match_name}_matched_only.csv"))
+    appended = matched_cases.append(matched_matches)
+    appended.to_csv(os.path.join("output", f"{case_name}_matched_to_{match_name}.csv"))
 
 
 def compare_populations(matched_cases, matched_matches, closest_match_columns):
