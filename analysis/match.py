@@ -59,13 +59,15 @@ def import_csvs(
     return cases, matches
 
 
-def add_variables(cases, matches):
+def add_variables(cases, matches, indicator_variable_name="case"):
     """
     Adds the following variables to the case and match tables:
     set_id - in the final table, this will be identify groups of matched cases
              and matches. Here it is set to the patient ID for cases, and a
              magic number denoting that a person has not been previously matched
              for matches.
+    indicator_variable_name - a binary variable to indicate whether they are a case or
+                              match. Default name is "case" but this can be changed as needed
     ...and these variables to the match table:
     randomise - this is used to randomly sort when selecting which matches to use.
                 A random seed is set so that the same matches are picked between
@@ -76,6 +78,8 @@ def add_variables(cases, matches):
     matches["randomise"] = 1
     random.seed(999)
     matches["randomise"] = matches["randomise"].apply(lambda x: x * random.random())
+    cases[indicator_variable_name] = 1
+    matches[indicator_variable_name] = 0
     return cases, matches
 
 
@@ -200,6 +204,7 @@ def match(
     closest_match_columns=None,
     date_exclusion_variables=None,
     replace_match_index_date_with_case=None,
+    indicator_variable_name="case",
 ):
     """
     Wrapper function that calls functions to:
@@ -270,7 +275,7 @@ def match(
     )
 
     ## Add set_id and randomise variables
-    cases, matches = add_variables(cases, matches)
+    cases, matches = add_variables(cases, matches, indicator_variable_name)
 
     indices = pre_calculate_indices(cases, matches, match_variables)
     matching_report([f"Completed pre-calculating indices at {datetime.now()}"])
