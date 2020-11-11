@@ -47,3 +47,6 @@ jobs:
 
     - name: Run matching
       run: python analysis/match_running.py
+
+    - name: Run unit tests
+      run: pytest
