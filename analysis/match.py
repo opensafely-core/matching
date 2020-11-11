@@ -13,6 +13,7 @@ def import_csvs(
     match_variables,
     date_exclusion_variables,
     index_date_variable,
+    output_path,
     replace_match_index_date_with_case=None,
 ):
     """
@@ -20,11 +21,11 @@ def import_csvs(
     Also sets the correct data types for the matching variables.
     """
     cases = pd.read_csv(
-        os.path.join("output", f"{case_csv}.csv"),
+        os.path.join(output_path, f"{case_csv}.csv"),
         index_col="patient_id",
     )
     matches = pd.read_csv(
-        os.path.join("output", f"{match_csv}.csv"),
+        os.path.join(output_path, f"{match_csv}.csv"),
         index_col="patient_id",
     )
 
@@ -200,6 +201,7 @@ def match(
     closest_match_columns=None,
     date_exclusion_variables=None,
     replace_match_index_date_with_case=None,
+    output_path="output",
 ):
     """
     Wrapper function that calls functions to:
@@ -214,7 +216,7 @@ def match(
     - save the results as a csv
     """
     report_path = os.path.join(
-        "output",
+        output_path,
         f"matching_report_{match_csv}.txt",
     )
 
@@ -243,6 +245,7 @@ def match(
         match_variables,
         date_exclusion_variables,
         index_date_variable,
+        output_path,
         replace_match_index_date_with_case,
     )
 
@@ -372,11 +375,11 @@ def match(
     ## Write to csvs
     matched_cases.to_csv(
         os.path.join(
-            "output",
+            output_path,
             f"{case_csv}_matched_{match_csv}.csv",
         )
     )
-    matched_matches.to_csv(os.path.join("output", f"{match_csv}_matched.csv"))
+    matched_matches.to_csv(os.path.join(output_path, f"{match_csv}_matched.csv"))
 
 
 def compare_populations(matched_cases, matched_matches, closest_match_columns):
