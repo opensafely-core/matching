@@ -4,7 +4,9 @@ from contextlib import contextmanager
 from glob import glob
 from tempfile import TemporaryDirectory
 
-from analysis.match import match
+import pandas as pd
+
+from analysis.match import match, pre_calculate_indices
 
 
 @contextmanager
@@ -57,3 +59,16 @@ def test_match_smoke_test():
         assert os.path.exists(
             os.path.join(output_path, "matching_report_input_pneumonia.txt")
         )
+
+
+def test_pre_calculate_indices():
+    cases = pd.DataFrame.from_records([["F"], ["M"]], columns=["sex"])
+    matches = pd.DataFrame.from_records(
+        [["F"], ["M"], ["F"], ["M"], ["F"]], columns=["sex"]
+    )
+    match_variables = {"sex": "category"}
+
+    indices_dict = pre_calculate_indices(cases, matches, match_variables)
+
+    assert indices_dict["sex"]["F"].equals(pd.Series([True, False, True, False, True]))
+    assert indices_dict["sex"]["M"].equals(pd.Series([False, True, False, True, False]))
