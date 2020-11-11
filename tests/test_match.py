@@ -57,7 +57,7 @@ def test_match_smoke_test():
     with set_up_output() as output_path:
         match(output_path=output_path, **pneumonia)
         assert os.path.exists(
-            os.path.join(output_path, "matching_report_input_pneumonia.txt")
+            os.path.join(output_path, "matching_report_pneumonia.txt")
         )
 
 
