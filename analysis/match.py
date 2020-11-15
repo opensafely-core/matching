@@ -132,7 +132,7 @@ def get_eligible_matches(case_row, matches, match_variables, indices):
     return eligible_matches
 
 
-def date_exclusions(df1, date_exclusion_variables, df2, index_date):
+def date_exclusions(df1, date_exclusion_variables, index_date):
     """
     Loops over the exclusion variables and creates a boolean array corresponding
     to where there are exclusion variables that occur before the index date.
@@ -140,9 +140,9 @@ def date_exclusions(df1, date_exclusion_variables, df2, index_date):
     exclusions = pd.Series(data=False, index=df1.index)
     for exclusion_var, before_after in date_exclusion_variables.items():
         if before_after == "before":
-            variable_bool = df1[exclusion_var] <= df2[index_date]
+            variable_bool = df1[exclusion_var] <= index_date
         elif before_after == "after":
-            variable_bool = df1[exclusion_var] > df2[index_date]
+            variable_bool = df1[exclusion_var] > index_date
         else:
             raise Exception(f"Date exclusion type '{exclusion_var}' invalid")
         exclusions = exclusions | variable_bool
@@ -286,10 +286,7 @@ def match(
 
     if date_exclusion_variables is not None:
         case_exclusions = date_exclusions(
-            cases,
-            date_exclusion_variables,
-            cases,
-            index_date_variable,
+            cases, date_exclusion_variables, cases[index_date_variable]
         )
         cases = cases.loc[~case_exclusions]
         matching_report(
@@ -311,13 +308,23 @@ def match(
         )
         matched_rows = matches.loc[eligible_matches]
 
+        ## Determine match index date
+        if replace_match_index_date_with_case is None:
+            index_date = matched_rows[index_date_variable]
+        else:
+            if offset_str == "no_offset":
+                index_date = case_row[index_date_variable]
+            elif offset_str.split("_")[2] == "earlier":
+                index_date = case_row[index_date_variable] - date_offset
+            elif offset_str.split("_")[2] == "later":
+                index_date = case_row[index_date_variable] + date_offset
+            else:
+                raise Exception(f"Date offset type '{offset_str}' not recognised")
+
         ## Index date based match exclusions (faster to do this after get_eligible_matches)
         if date_exclusion_variables is not None:
             exclusions = date_exclusions(
-                matched_rows,
-                date_exclusion_variables,
-                case_row,
-                index_date_variable,
+                matched_rows, date_exclusion_variables, index_date
             )
             matched_rows = matched_rows.loc[~exclusions]
 
@@ -339,19 +346,7 @@ def match(
 
         ## Set index_date of the match where needed
         if replace_match_index_date_with_case is not None:
-            if offset_str == "no_offset":
-                matches.loc[matched_rows, index_date_variable] = case_row[
-                    index_date_variable
-                ]
-            elif offset_str.split("_")[2] == "earlier":
-
-                matches.loc[matched_rows, index_date_variable] = (
-                    case_row[index_date_variable] - date_offset
-                )
-            elif offset_str.split("_")[2] == "later":
-                matches.loc[matched_rows, index_date_variable] = (
-                    case_row[index_date_variable] + date_offset
-                )
+            matches.loc[matched_rows, index_date_variable] = index_date
 
     ## Drop unmatched cases/matches
     matched_cases = cases.loc[cases["match_counts"] == matches_per_case]
