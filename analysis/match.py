@@ -136,6 +136,8 @@ def date_exclusions(df1, date_exclusion_variables, index_date):
     """
     Loops over the exclusion variables and creates a boolean array corresponding
     to where there are exclusion variables that occur before the index date.
+    index_date can be either a single value, or a pandas series whose index
+    matches df1.
     """
     exclusions = pd.Series(data=False, index=df1.index)
     for exclusion_var, before_after in date_exclusion_variables.items():
