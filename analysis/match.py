@@ -13,6 +13,7 @@ def import_csvs(
     match_variables,
     date_exclusion_variables,
     index_date_variable,
+    output_path,
     replace_match_index_date_with_case=None,
 ):
     """
@@ -20,11 +21,11 @@ def import_csvs(
     Also sets the correct data types for the matching variables.
     """
     cases = pd.read_csv(
-        os.path.join("output", f"{case_csv}.csv"),
+        os.path.join(output_path, f"{case_csv}.csv"),
         index_col="patient_id",
     )
     matches = pd.read_csv(
-        os.path.join("output", f"{match_csv}.csv"),
+        os.path.join(output_path, f"{match_csv}.csv"),
         index_col="patient_id",
     )
 
@@ -205,6 +206,7 @@ def match(
     date_exclusion_variables=None,
     replace_match_index_date_with_case=None,
     indicator_variable_name="case",
+    output_path="output",
 ):
     """
     Wrapper function that calls functions to:
@@ -219,7 +221,7 @@ def match(
     - save the results as a csv
     """
     report_path = os.path.join(
-        "output",
+        output_path,
         f"matching_report_{match_csv.replace('input_', '')}.txt",
     )
 
@@ -248,6 +250,7 @@ def match(
         match_variables,
         date_exclusion_variables,
         index_date_variable,
+        output_path,
         replace_match_index_date_with_case,
     )
 
@@ -378,11 +381,11 @@ def match(
     case_name = case_csv.replace("input_", "")
     match_name = match_csv.replace("input_", "")
     matched_cases.to_csv(
-        os.path.join("output", f"{case_name}_only_matched_to_{match_name}.csv")
+        os.path.join(output_path, f"{case_name}_only_matched_to_{match_name}.csv")
     )
-    matched_matches.to_csv(os.path.join("output", f"{match_name}_matched_only.csv"))
+    matched_matches.to_csv(os.path.join(output_path, f"{match_name}_matched_only.csv"))
     appended = matched_cases.append(matched_matches)
-    appended.to_csv(os.path.join("output", f"{case_name}_matched_to_{match_name}.csv"))
+    appended.to_csv(os.path.join(output_path, f"{case_name}_matched_to_{match_name}.csv"))
 
 
 def compare_populations(matched_cases, matched_matches, closest_match_columns):
