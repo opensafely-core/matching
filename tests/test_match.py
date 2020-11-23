@@ -15,6 +15,7 @@ from analysis.match import (
     greedily_pick_matches,
     get_date_offset,
     compare_populations,
+    NOT_PREVIOUSLY_MATCHED,
 )
 
 
@@ -133,10 +134,10 @@ def test_get_eligible_matches():
     case_row = cases.iloc[0]
     matches = pd.DataFrame.from_records(
         [
-            {"sex": "M", "age": 37, "set_id": -9},
-            {"sex": "M", "age": 57, "set_id": -9},
-            {"sex": "F", "age": 32, "set_id": -9},
-            {"sex": "F", "age": 81, "set_id": -9},
+            {"sex": "M", "age": 37, "set_id": NOT_PREVIOUSLY_MATCHED},
+            {"sex": "M", "age": 57, "set_id": NOT_PREVIOUSLY_MATCHED},
+            {"sex": "F", "age": 32, "set_id": NOT_PREVIOUSLY_MATCHED},
+            {"sex": "F", "age": 81, "set_id": NOT_PREVIOUSLY_MATCHED},
             {"sex": "M", "age": 37, "set_id": 1},
         ]
     )
@@ -220,14 +221,13 @@ def test_greedily_pick_matches():
 
     test_matches = matched_rows.iloc[[0, 2]].index
 
-    assert len(matches.difference(test_matches)) == 0
+    assert matches.equals(test_matches)
 
 
 def test_get_date_offset():
     """
     Tests that the pd.DateOffset produced by various combinations of input
-    strings is correct. These are the same as the method used in the function,
-    but I don't know how else to get a pd.DateOffset.
+    strings is correct.
     """
     no_offset = get_date_offset("no_offset")
     one_year_before = get_date_offset("1_year_before")
