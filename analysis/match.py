@@ -87,7 +87,7 @@ def add_variables(cases, matches, indicator_variable_name="case"):
 def get_bool_index(match_type, value, match_var, matches):
     """
     Compares the value in the given case variable to the variable in
-    the match dataframe, to generate a boolean index. Comparisons vary
+    the match dataframe, to generate a boolean Series. Comparisons vary
     accoding to the matching specification.
     """
     if match_type == "category":
@@ -102,7 +102,7 @@ def get_bool_index(match_type, value, match_var, matches):
 def pre_calculate_indices(cases, matches, match_variables):
     """
     Loops over each of the values in the case table for each of the match
-    variables and generates a boolean index against the match table. These are
+    variables and generates a boolean Series against the match table. These are
     returned in a dict.
     """
     indices_dict = {}
@@ -119,7 +119,7 @@ def pre_calculate_indices(cases, matches, match_variables):
 
 def get_eligible_matches(case_row, matches, match_variables, indices):
     """
-    Loops over the match_variables and combines the boolean indices
+    Loops over the match_variables and combines the boolean Series
     from pre_calculate_indices into a single bool index. Also removes previously
     matched patients.
     """
@@ -135,9 +135,9 @@ def get_eligible_matches(case_row, matches, match_variables, indices):
 
 def date_exclusions(df1, date_exclusion_variables, index_date):
     """
-    Loops over the exclusion variables and creates a boolean array corresponding
+    Loops over the exclusion variables and creates a boolean Series corresponding
     to where there are exclusion variables that occur before the index date.
-    index_date can be either a single value, or a pandas series whose index
+    index_date can be either a single value, or a pandas Series whose index
     matches df1.
     """
     exclusions = pd.Series(data=False, index=df1.index)
@@ -382,7 +382,9 @@ def match(
     )
     matched_matches.to_csv(os.path.join(output_path, f"{match_name}_matched_only.csv"))
     appended = matched_cases.append(matched_matches)
-    appended.to_csv(os.path.join(output_path, f"{case_name}_matched_to_{match_name}.csv"))
+    appended.to_csv(
+        os.path.join(output_path, f"{case_name}_matched_to_{match_name}.csv")
+    )
 
 
 def compare_populations(matched_cases, matched_matches, closest_match_columns):
