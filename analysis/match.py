@@ -156,17 +156,17 @@ def greedily_pick_matches(
     matches_per_case,
     matched_rows,
     case_row,
-    closest_match_columns=None,
+    closest_match_variables=None,
 ):
     """
     Cuts the eligible_matches list to the number of matches specified. This is a
-    greedy matching method, so if closest_match_columns are specified, it sorts
+    greedy matching method, so if closest_match_variables are specified, it sorts
     on those variables to get the closest available matches for that case. It
     always also sorts on random variable.
     """
     sort_columns = []
-    if closest_match_columns is not None:
-        for var in closest_match_columns:
+    if closest_match_variables is not None:
+        for var in closest_match_variables:
             matched_rows[f"{var}_delta"] = abs(matched_rows[var] - case_row[var])
             sort_columns.append(f"{var}_delta")
 
@@ -204,7 +204,7 @@ def match(
     matches_per_case,
     match_variables,
     index_date_variable,
-    closest_match_columns=None,
+    closest_match_variables=None,
     date_exclusion_variables=None,
     replace_match_index_date_with_case=None,
     indicator_variable_name="case",
@@ -338,7 +338,7 @@ def match(
             matches_per_case,
             matched_rows,
             case_row,
-            closest_match_columns,
+            closest_match_variables,
         )
 
         ## Report number of matches for each case
@@ -359,7 +359,7 @@ def match(
 
     ## Describe population differences
     scalar_comparisons = compare_populations(
-        matched_cases, matched_matches, closest_match_columns
+        matched_cases, matched_matches, closest_match_variables
     )
 
     matching_report(
@@ -387,17 +387,17 @@ def match(
     )
 
 
-def compare_populations(matched_cases, matched_matches, closest_match_columns):
+def compare_populations(matched_cases, matched_matches, closest_match_variables):
     """
-    Takes the list of closest_match_columns and describes each of them for the matched
+    Takes the list of closest_match_variables and describes each of them for the matched
     case and matched control population, so that their similarity can be checked.
     Returns a list strings corresponding to the rows of the describe() output, to be
-    passed to matching_report(). Returns empty list if no closest_match_columns are
+    passed to matching_report(). Returns empty list if no closest_match_variables are
     specified.
     """
     scalar_comparisons = []
-    if closest_match_columns is not None:
-        for var in closest_match_columns:
+    if closest_match_variables is not None:
+        for var in closest_match_variables:
             scalar_comparisons.extend(
                 [
                     f"\n{var} comparison:",
