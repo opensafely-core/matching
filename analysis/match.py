@@ -88,7 +88,7 @@ def get_bool_index(match_type, value, match_var, matches):
     """
     Compares the value in the given case variable to the variable in
     the match dataframe, to generate a boolean Series. Comparisons vary
-    accoding to the matching specification.
+    according to the matching specification.
     """
     if match_type == "category":
         bool_index = matches[match_var] == value
@@ -120,7 +120,7 @@ def pre_calculate_indices(cases, matches, match_variables):
 def get_eligible_matches(case_row, matches, match_variables, indices):
     """
     Loops over the match_variables and combines the boolean Series
-    from pre_calculate_indices into a single bool index. Also removes previously
+    from pre_calculate_indices into a single bool Series. Also removes previously
     matched patients.
     """
     eligible_matches = pd.Series(data=True, index=matches.index)
@@ -179,7 +179,7 @@ def greedily_pick_matches(
 def get_date_offset(offset_str):
     """
     Parses the string given by replace_match_index_date_with_case
-    to determine the unit and lenght of offset.
+    to determine the unit and length of offset.
     Returns a pr.DateOffset of the appropriate length.
     """
     if offset_str == "no_offset":
