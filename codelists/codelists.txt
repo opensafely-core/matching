@@ -2,9 +2,9 @@ opensafely/covid-identification/2020-06-03
 opensafely/diabetes/2020-04-15
 opensafely/ethnicity/2020-04-27
 opensafely/hypertension/2020-04-28
-opensafely/incident-venous-thromboembolic-disease/2020-09-30-draft
-opensafely/pneumonia-secondary-care/2020-10-05-draft
+opensafely/incident-venous-thromboembolic-disease/2020-09-30
+opensafely/pneumonia-secondary-care/2020-10-05
 opensafely/smoking-clear/2020-04-29
-opensafely/incident-stroke/2020-10-05-draft
-opensafely/stroke-secondary-care/2020-10-05-draft
-opensafely/venous-thromboembolic-disease-hospital/2020-10-01-draft
+opensafely/incident-stroke/2020-10-05
+opensafely/stroke-secondary-care/2020-10-05
+opensafely/venous-thromboembolic-disease-hospital/2020-10-01

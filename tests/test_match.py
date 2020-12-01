@@ -53,7 +53,7 @@ def test_match_smoke_test():
             "stp": "category",
             "indexdate": "month_only",
         },
-        "closest_match_columns": ["age"],
+        "closest_match_variables": ["age"],
         "index_date_variable": "indexdate",
         "date_exclusion_variables": {
             "died_date_ons": "before",
@@ -62,6 +62,7 @@ def test_match_smoke_test():
             "previous_stroke_gp": "before",
             "previous_stroke_hospital": "before",
         },
+        "output_suffix": "_pneumonia"
     }
 
     with set_up_output() as output_path:
