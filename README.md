@@ -33,6 +33,11 @@ match(
 )
 ```
 This matches 3 matches per case, on the variables `sex`, and `age` (±5 years).
+**Outputs:**\
+`output/matched_cases.csv`\
+`output/matched_matches.csv`\
+`output/matched_combined.csv`\
+`output/matching_report.txt`
 
 ### Required arguments
 
@@ -53,7 +58,7 @@ A Python dictionary containing a list of variables to match on as keys, while th
 - `"month_only"`  - a specially implemented categorical variable that extracts the month from a date variable (which must be in the format `"YYYY/MM/DD"`)
 
 `index_date_variable`\
-The variable relating to the index date for each case.
+A string variable (format: "YYYY/MM/DD") relating to the index date for each case.
 
 
 ### Optional arguments
@@ -86,18 +91,24 @@ The folder where the outputs (CSVs and matching report) should be saved.
 ## Outputs
 
 ### Datasets
-`matched_cases{output_suffix}.csv`\
+All the below data outputs contain all of the columns that were in the input CSVs, plus:
+
+- `set_id` - a variable identifying the groups of matched cases and matches. It is the same as the patient ID of the case.
+
+- `case` - a binary variable (`0` or `1`) to indicate whether each patient is a "case" or "match". This is named `case` by default, but the name can be user defined (see `indicator_variable_name` above).
+
+`{output_path}/matched_cases{output_suffix}.csv`\
 Contains all the cases that were matched to the specified number of matches.
 
 
-`matched_matches{output_suffix}.csv`\
+`{output_path}/matched_matches{output_suffix}.csv`\
 Contains all the matches that were matched to cases/exposed patients.
 
-`matched_combined{output_suffix}.csv`\
+`{output_path}/matched_combined{output_suffix}.csv`\
 Contains the two datasets above appended together.
 
 ### Matching report
-`matching_report{output_suffix}.txt`
+`{output_path}/matching_report{output_suffix}.txt`
 This contains patient counts for each stage of the matching process, then basic summary stats about the matched populations. For example:
 ```
 Matching started at: 2020-11-26 18:54:52.447761
@@ -177,8 +188,17 @@ match(
         "previous_stroke_gp": "before",
         "previous_stroke_hospital": "before",
     },
+    output_suffix="_pneumonia",
+    output_path="output",
 )
 ```
+**Outputs:**\
+`output/matched_cases_pneumonia.csv`\
+`output/matched_matches_pneumonia.csv`\
+`output/matched_combined_pneumonia.csv`\
+`output/matching_report_pneumonia.txt`
+
+---
 
 Match COVID population to general population from 2019 with:
  - 2 matches
@@ -207,8 +227,17 @@ match(
         "previous_stroke_gp": "before",
         "previous_stroke_hospital": "before",
     },
+    output_suffix="_control_2019",
+    output_path="output",
 )
 ```
+**Outputs:**\
+`output/matched_cases_control_2019.csv`\
+`output/matched_matches_control_2019.csv`\
+`output/matched_combined_control_2019.csv`\
+`output/matching_report_control_2019.txt`
+
+---
 
 Match COVID population to general population from 2020 with:
  - 2 matches
@@ -237,8 +266,15 @@ match(
         "previous_stroke_gp": "before",
         "previous_stroke_hospital": "before",
     },
+    output_suffix="_control_2020",
+    output_path="output",
 )
 ```
+**Outputs:**\
+`output/matched_cases_control_2020.csv`\
+`output/matched_matches_control_2020.csv`\
+`output/matched_combined_control_2020.csv`\
+`output/matching_report_control_2020.txt`
 
 ## Passing a dict of options instead
 Originally this was run by passing a Python dictionary to the function. This is still possible:
@@ -262,6 +298,8 @@ pneumonia = {
         "previous_stroke_gp": "before",
         "previous_stroke_hospital": "before",
     },
+    "output_suffix"="pneumonia",
+    "output_path"="output",
 }
 match(**pneumonia)
 ```
