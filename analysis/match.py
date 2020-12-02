@@ -51,11 +51,10 @@ def import_csvs(
         for var in date_exclusion_variables:
             cases[var] = pd.to_datetime(cases[var])
             matches[var] = pd.to_datetime(matches[var])
-            cases[index_date_variable] = pd.to_datetime(cases[index_date_variable])
-            if replace_match_index_date_with_case is None:
-                matches[index_date_variable] = pd.to_datetime(
-                    matches[index_date_variable]
-                )
+    ## Format index date as date
+    cases[index_date_variable] = pd.to_datetime(cases[index_date_variable])
+    if replace_match_index_date_with_case is None:
+        matches[index_date_variable] = pd.to_datetime(matches[index_date_variable])
 
     return cases, matches
 
