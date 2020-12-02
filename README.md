@@ -55,10 +55,10 @@ A Python dictionary containing a list of variables to match on as keys, while th
 - `"category"` - a categorical variable (e.g. sex)
 - _integer number_ - an integer scalar value that identifies the variable as a scalar, and sets the matching range (e.g. `0` for exact matches, `5` for matches within ±5)
 - _float number_ - **not yet implemented**, make an issue if you need it, it should be straightforward.
-- `"month_only"`  - a specially implemented categorical variable that extracts the month from a date variable (which must be in the format `"YYYY/MM/DD"`)
+- `"month_only"`  - a specially implemented categorical variable that extracts the month from a date variable (which should be in the format `"YYYY-MM-DD"`)
 
 `index_date_variable`\
-A string variable (format: "YYYY/MM/DD") relating to the index date for each case.
+A string variable (format: "YYYY-MM-DD") relating to the index date for each case.
 
 
 ### Optional arguments
