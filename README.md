@@ -32,7 +32,7 @@ match(
     index_date_variable="indexdate",
 )
 ```
-This matches 3 matches per case, on the variables `sex`, and `age` (±5 years).
+This matches 3 matches per case, on the variables `sex`, and `age` (±5 years).\
 **Outputs:**\
 `output/matched_cases.csv`\
 `output/matched_matches.csv`\
@@ -298,8 +298,8 @@ pneumonia = {
         "previous_stroke_gp": "before",
         "previous_stroke_hospital": "before",
     },
-    "output_suffix"="pneumonia",
-    "output_path"="output",
+    "output_suffix": "pneumonia",
+    "output_path": "output",
 }
 match(**pneumonia)
 ```
