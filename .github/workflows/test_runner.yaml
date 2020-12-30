@@ -1,52 +1,20 @@
-name: Run tests and publish dummy data as release
+name: Tests
 
 on: [push]
-env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
-  test_model:
+  tests:
     runs-on: ubuntu-latest
-    name: Test stata can run against the model, using dummy data
+    name: Run test suite
     steps:
-    - name: Extract branch name
-      shell: bash
-      # This is a github workflow command
-      # https://help.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-output-parameter
-      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-      id: extract_branch
     - name: Checkout
       uses: actions/checkout@v1
-    - name: Set up Python 3.8
+    - name: Set up Python 3.7
       uses: actions/setup-python@v1
       with:
-        python-version: 3.8
+        python-version: 3.7
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
         pip install -r requirements.txt
-    - name: Docker Login
-      uses: azure/docker-login@v1
-      with:
-        # It seems we can't do this with the standard GITHUB_TOKEN, but
-        # have to use a personal token with the correct permissions instead
-        login-server: docker.opensafely.org
-        username: docker
-        password: ${{ secrets.OPENSAFELY_DOCKER_PASSWORD }}
-
-    - name: Update codelists
-      run: cohortextractor update_codelists
-    - name: Check codelists are up to date
-      run: '[[ -z $(git status --porcelain codelists) ]] || (echo "Uncommitted changes to codelists detected, aborting" && exit 1)'
-
-    - name: Generate case dummy data
-      run: cohortextractor generate_cohort --study-definition study_definition_covid --expectations-population=100
-
-    - name: Generate match population dummy data
-      # Must be larger than case pop - patient_IDs from case pop are dropped from match pop
-      run: cohortextractor generate_cohort --skip-existing --expectations-population=1000
-
-    - name: Run matching
-      run: python analysis/match_running.py
-
-    - name: Run unit tests
-      run: pytest
+    - name: Run tests
+      run: python -m pytest
