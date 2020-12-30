@@ -1,0 +1,59 @@
+name: Tag repo; build and publish assets
+on:
+  push:
+    branches:
+      - master
+
+
+jobs:
+  tag-new-version:
+    # This uses `conventional commits` to generate tags.  A full list
+    # of valid prefixes is here:
+    # https://github.com/commitizen/conventional-commit-types/blob/master/index.json)
+    #
+    # fix, perf -> patch release
+    # feat -> minor release
+    # BREAKING CHANGE in footer -> major release
+    #
+    # anything else (docs, refactor, etc) does not create a release
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.new_version }}
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 0
+      - name: Bump version and push tag
+        id: tag
+        uses: mathieudutour/github-tag-action@v4.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: false
+
+
+  build-and-publish-package:
+    runs-on: ubuntu-latest
+    name: Build and publish PyPI package
+    needs: tag-new-version
+    if: needs.tag-new-version.outputs.tag
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - name: Install wheel package
+      run: |
+        pip install wheel
+    - name: Generate correct value for VERSION file
+      run: |
+        echo ${{ needs.tag-new-version.outputs.tag }} > VERSION
+    - name: Build package
+      run: |
+        python setup.py sdist bdist_wheel
+    - name: Publish package
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_PASSWORD }}
