@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 
 import pandas as pd
 
-from analysis.match import (
+from osmatching.osmatching import (
     match,
     get_bool_index,
     pre_calculate_indices,
