@@ -205,6 +205,7 @@ def match(
     index_date_variable,
     closest_match_variables=None,
     date_exclusion_variables=None,
+    min_matches_per_case=0,
     replace_match_index_date_with_case=None,
     indicator_variable_name="case",
     output_suffix="",
@@ -222,6 +223,9 @@ def match(
     - set the index date of the match as that of the case (where desired)
     - save the results as a csv
     """
+    if min_matches_per_case > matches_per_case:
+        raise ValueError("min_matches_per_case cannot be greater than matches_per_case")
+
     report_path = os.path.join(
         output_path,
         f"matching_report{output_suffix}.txt",
@@ -346,7 +350,7 @@ def match(
         cases.loc[case_id, "match_counts"] = num_matches
 
         ## Label matches with case ID if there are enough
-        if num_matches == matches_per_case:
+        if num_matches >= min_matches_per_case:
             matches.loc[matched_rows, "set_id"] = case_id
 
         ## Set index_date of the match where needed
@@ -354,7 +358,7 @@ def match(
             matches.loc[matched_rows, index_date_variable] = index_date
 
     ## Drop unmatched cases/matches
-    matched_cases = cases.loc[cases["match_counts"] == matches_per_case]
+    matched_cases = cases.loc[cases["match_counts"] >= min_matches_per_case]
     matched_matches = matches.loc[matches["set_id"] != NOT_PREVIOUSLY_MATCHED]
 
     ## Describe population differences
