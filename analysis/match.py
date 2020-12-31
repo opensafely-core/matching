@@ -223,9 +223,8 @@ def match(
     - set the index date of the match as that of the case (where desired)
     - save the results as a csv
     """
-    assert (
-        min_matches_per_case <= matches_per_case
-    ), "min_matches_per_case cannot be greater than matches_per_case"
+    if min_matches_per_case > matches_per_case:
+        raise ValueError("min_matches_per_case cannot be greater than matches_per_case")
 
     report_path = os.path.join(
         output_path,
