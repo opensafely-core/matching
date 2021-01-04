@@ -152,9 +152,9 @@ def greedily_pick_matches(
     """
     Cuts the eligible_matches list to the number of matches specified. This is a
     greedy matching method, so if closest_match_variables are specified, it picks the
-    deviate least from the case values (prioritised in the order they are specified). If
-    there are more than matches_per_case matches who are identical, matches are randomly
-    sampled.
+    values that deviate least from the case values (prioritised in the order they are
+    specified). If there are more than matches_per_case matches who are identical,
+    matches are randomly sampled.
     """
     if closest_match_variables is not None:
         sort_cols = []
