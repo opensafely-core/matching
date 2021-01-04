@@ -1,6 +1,5 @@
 import os
-from setuptools import setup, find_packages
-#setup()
+from setuptools import setup, find_namespace_packages
 
 with open(os.path.join("VERSION")) as f:
     version = f.read().strip()
@@ -8,7 +7,7 @@ with open(os.path.join("VERSION")) as f:
 setup(
     name="opensafely-matching",
     version=version,
-    packages=find_packages(),
+    packages=find_namespace_packages(exclude=["tests"]),
     url="https://github.com/opensafely/matching",
     author="OpenSAFELY",
     author_email="tech@opensafely.org",
