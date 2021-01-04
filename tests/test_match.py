@@ -62,7 +62,7 @@ def test_match_smoke_test():
             "previous_stroke_gp": "before",
             "previous_stroke_hospital": "before",
         },
-        "output_suffix": "_pneumonia"
+        "output_suffix": "_pneumonia",
     }
 
     with set_up_output() as output_path:
@@ -205,11 +205,11 @@ def test_greedily_pick_matches():
     matches_per_case = 2
     matched_rows = pd.DataFrame.from_records(
         [
-            {"age": 36, "randomise": 0.69500},
-            {"age": 35, "randomise": 0.50028},
-            {"age": 37, "randomise": 0.05418},
-            {"age": 31, "randomise": 0.15002},
-            {"age": 40, "randomise": 0.31399},
+            {"age": 36},
+            {"age": 35},
+            {"age": 37},
+            {"age": 31},
+            {"age": 40},
         ]
     )
     cases = pd.DataFrame.from_records([{"age": 36}])
@@ -220,7 +220,8 @@ def test_greedily_pick_matches():
         matches_per_case, matched_rows, case_row, closest_match_columns
     )
 
-    test_matches = matched_rows.iloc[[0, 2]].index
+    test_matches = matched_rows.iloc[[0, 1, 2]]
+    test_matches = test_matches.sample(n=matches_per_case, random_state=123).index
 
     assert matches.equals(test_matches)
 

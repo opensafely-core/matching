@@ -1,6 +1,5 @@
 import os
 import copy
-import random
 from datetime import datetime
 import pandas as pd
 
@@ -68,16 +67,9 @@ def add_variables(cases, matches, indicator_variable_name="case"):
              for matches.
     indicator_variable_name - a binary variable to indicate whether they are a case or
                               match. Default name is "case" but this can be changed as needed
-    ...and these variables to the match table:
-    randomise - this is used to randomly sort when selecting which matches to use.
-                A random seed is set so that the same matches are picked between
-                runs on the same input CSVs.
     """
     cases["set_id"] = cases.index
     matches["set_id"] = NOT_PREVIOUSLY_MATCHED
-    matches["randomise"] = 1
-    random.seed(999)
-    matches["randomise"] = matches["randomise"].apply(lambda x: x * random.random())
     cases[indicator_variable_name] = 1
     matches[indicator_variable_name] = 0
     return cases, matches
@@ -159,19 +151,20 @@ def greedily_pick_matches(
 ):
     """
     Cuts the eligible_matches list to the number of matches specified. This is a
-    greedy matching method, so if closest_match_variables are specified, it sorts
-    on those variables to get the closest available matches for that case. It
-    always also sorts on random variable.
+    greedy matching method, so if closest_match_variables are specified, it picks the
+    values that deviate least from the case values (prioritised in the order they are
+    specified). If there are more than matches_per_case matches who are identical,
+    matches are randomly sampled.
     """
-    sort_columns = []
     if closest_match_variables is not None:
+        sort_cols = []
         for var in closest_match_variables:
             matched_rows[f"{var}_delta"] = abs(matched_rows[var] - case_row[var])
-            sort_columns.append(f"{var}_delta")
+            sort_cols.append(f"{var}_delta")
+        matched_rows = matched_rows.nsmallest(matches_per_case, sort_cols, keep="all")
 
-    sort_columns.append("randomise")
-    matched_rows = matched_rows.sort_values(sort_columns)
-    matched_rows = matched_rows.head(matches_per_case)
+    if len(matched_rows) > matches_per_case:
+        matched_rows = matched_rows.sample(n=matches_per_case, random_state=123)
     return matched_rows.index
 
 
@@ -283,7 +276,7 @@ def match(
         ]
     )
 
-    ## Add set_id and randomise variables
+    ## Add set_id variable
     cases, matches = add_variables(cases, matches, indicator_variable_name)
 
     indices = pre_calculate_indices(cases, matches, match_variables)
