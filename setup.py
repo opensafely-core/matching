@@ -1,6 +1,7 @@
 import os
 from setuptools import setup, find_namespace_packages
 
+
 with open(os.path.join("VERSION")) as f:
     version = f.read().strip()
 
