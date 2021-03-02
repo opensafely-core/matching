@@ -134,7 +134,7 @@ def date_exclusions(df1, date_exclusion_variables, index_date):
     exclusions = pd.Series(data=False, index=df1.index)
     for exclusion_var, before_after in date_exclusion_variables.items():
         if before_after == "before":
-            variable_bool = df1[exclusion_var] <= index_date
+            variable_bool = df1[exclusion_var] < index_date
         elif before_after == "after":
             variable_bool = df1[exclusion_var] > index_date
         else:
