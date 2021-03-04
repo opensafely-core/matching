@@ -193,7 +193,7 @@ def test_date_exclusions():
     excl = date_exclusions(df1, date_exclusion_variables, index_date)
     excl_ser = date_exclusions(df1, date_exclusion_variables, index_date_series)
 
-    assert excl.equals(pd.Series([True, True, False, True, False, True]))
+    assert excl.equals(pd.Series([True, False, False, True, False, True]))
     assert excl_ser.equals(pd.Series([True, False, False, True, False, True]))
 
 

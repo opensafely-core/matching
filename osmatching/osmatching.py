@@ -134,7 +134,7 @@ def date_exclusions(df1, date_exclusion_variables, index_date):
     exclusions = pd.Series(data=False, index=df1.index)
     for exclusion_var, before_after in date_exclusion_variables.items():
         if before_after == "before":
-            variable_bool = df1[exclusion_var] <= index_date
+            variable_bool = df1[exclusion_var] < index_date
         elif before_after == "after":
             variable_bool = df1[exclusion_var] > index_date
         else:
@@ -203,6 +203,7 @@ def match(
     indicator_variable_name="case",
     output_suffix="",
     output_path="output",
+    drop_cases_from_matches=False
 ):
     """
     Wrapper function that calls functions to:
@@ -262,10 +263,9 @@ def match(
         ],
     )
 
-    ## Drop cases from match population
-    ## WARNING - this will cause issues in dummy data where population
-    ## sizes are the same, as the indices will be identical.
-    matches = matches.drop(cases.index, errors="ignore")
+    ## Drop cases from match population if specified
+    if drop_cases_from_matches:
+        matches = matches.drop(cases.index, errors="ignore")
 
     matching_report(
         [

@@ -91,6 +91,9 @@ If you are matching on multiple populations within the same project, you may wan
 `output_path` (default: `"output"`)\
 The folder where the outputs (CSVs and matching report) should be saved.
 
+`drop_cases_from_matches` (default: `False`)\
+If `True`, all `patient_id`s in the case CSV are dropped from the match CSV before matching starts.
+
 ## Outputs
 
 ### Datasets
