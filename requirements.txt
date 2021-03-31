@@ -62,7 +62,7 @@ pyparsing==2.4.7
     # via
     #   matplotlib
     #   packaging
-pytest==6.1.2
+pytest==6.2.2
     # via -r requirements.in
 python-dateutil==2.8.1
     # via
