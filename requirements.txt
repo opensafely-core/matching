@@ -47,7 +47,7 @@ opensafely-jobrunner==2.16.6
     # via opensafely-cohort-extractor
 packaging==20.4
     # via pytest
-pandas==1.1.4
+pandas==1.2.4
     # via
     #   opensafely-cohort-extractor
     #   seaborn
