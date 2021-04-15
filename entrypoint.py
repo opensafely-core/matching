@@ -6,13 +6,10 @@ from osmatching import match
 
 
 def load_matching_config(input_files, match_config):
-    print(match_config)
     match(case_csv=input_files['cases'],
           match_csv=input_files['controls'],
           matches_per_case=match_config['matches_per_case'],
-          match_variables={
-              "age": 5
-          },
+          match_variables=match_config["match_variables"],
           index_date_variable=match_config["index_variable"],
           output_path="")
 
