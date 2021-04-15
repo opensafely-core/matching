@@ -21,7 +21,7 @@ from osmatching.osmatching import (
 
 @contextmanager
 def set_up_output():
-    """Copy the CSV files in tests/output to a temporary directory, and yield
+    """Copy the CSV files in tests/test_data to a temporary directory, and yield
     the path to this directory.
 
     This should be used as a context manager:
@@ -33,7 +33,7 @@ def set_up_output():
         )
     """
 
-    output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
+    output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data")
     with TemporaryDirectory() as dir_path:
         for path in glob(os.path.join(output_path, "*.csv")):
             shutil.copy(path, dir_path)
@@ -74,7 +74,7 @@ def test_match_smoke_test():
 
 def test_categorical_get_bool_index():
     """
-    Runs get_eligible_matches on synthetic categorical data and compares the output
+    Runs get_eligible_matches on synthetic categorical data and compares the test_data
     with manually entered boolean Series.
     """
     match_type = "category"
@@ -91,7 +91,7 @@ def test_categorical_get_bool_index():
 
 def test_scalar_get_bool_index():
     """
-    Runs get_eligible_matches on synthetic integer data and compares the output
+    Runs get_eligible_matches on synthetic integer data and compares the test_data
     with manually entered boolean Series.
     """
     match_type = 5
@@ -106,7 +106,7 @@ def test_scalar_get_bool_index():
 
 def test_pre_calculate_indices():
     """
-    Test that the output booleans match with a predetermined series for a simple
+    Test that the test_data booleans match with a predetermined series for a simple
     categorical variable with 2 categories. (other comparison types are tested in
     get_bool_index)
     """
@@ -124,7 +124,7 @@ def test_pre_calculate_indices():
 
 def test_get_eligible_matches():
     """
-    Runs get_eligible_matches on synthetic data and compares the output with
+    Runs get_eligible_matches on synthetic data and compares the test_data with
     manually entered boolean Series.
     """
     cases = pd.DataFrame.from_records(
@@ -155,7 +155,7 @@ def test_get_eligible_matches():
 
 def test_date_exclusions():
     """
-    Runs date_exclusions on synthetic data and compares the output with
+    Runs date_exclusions on synthetic data and compares the test_data with
     manually entered boolean Series. It does this for both a single index_date
     and a Series of index_dates (with the same index as df1) - the function
     accepts either.
@@ -199,7 +199,7 @@ def test_date_exclusions():
 
 def test_greedily_pick_matches():
     """
-    Runs greedily_pick_matches on synthetic data and compares the output with
+    Runs greedily_pick_matches on synthetic data and compares the test_data with
     hand picked rows.
     """
     matches_per_case = 2
