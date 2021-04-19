@@ -13,7 +13,7 @@ def import_csvs(
     match_variables,
     date_exclusion_variables,
     index_date_variable,
-    output_path="tests",
+    input_path="tests/test_data",
     replace_match_index_date_with_case=None,
 ):
     """
@@ -21,11 +21,11 @@ def import_csvs(
     Also sets the correct data types for the matching variables.
     """
     cases = pd.read_csv(
-        os.path.join(output_path, f"{case_csv}"),
+        os.path.join(input_path, f"{case_csv}"),
         index_col="patient_id",
     )
     matches = pd.read_csv(
-        os.path.join(output_path, f"{match_csv}"),
+        os.path.join(input_path, f"{match_csv}"),
         index_col="patient_id",
     )
 
@@ -204,7 +204,8 @@ def match(
     replace_match_index_date_with_case=None,
     indicator_variable_name="case",
     output_suffix="",
-    output_path="tests/test_data",
+    output_path="tests/test_output",
+    input_path="tests/test_data",
     drop_cases_from_matches=False
 ):
     """
@@ -252,7 +253,7 @@ def match(
         match_variables,
         date_exclusion_variables,
         index_date_variable,
-        output_path,
+        input_path,
         replace_match_index_date_with_case,
     )
 

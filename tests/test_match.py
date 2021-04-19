@@ -20,7 +20,7 @@ from osmatching.osmatching import (
 
 
 @contextmanager
-def set_up_output():
+def set_up_input():
     """Copy the CSV files in tests/test_data to a temporary directory, and yield
     the path to this directory.
 
@@ -33,9 +33,9 @@ def set_up_output():
         )
     """
 
-    output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data")
+    input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data")
     with TemporaryDirectory() as dir_path:
-        for path in glob(os.path.join(output_path, "*.csv")):
+        for path in glob(os.path.join(input_path, "*.csv")):
             shutil.copy(path, dir_path)
         yield dir_path
 
@@ -63,13 +63,14 @@ def test_match_smoke_test():
             "previous_stroke_hospital": "before",
         },
         "output_suffix": "_test",
+        "output_path": "tests/test_output"
     }
 
-    with set_up_output() as output_path:
-        match(output_path=output_path, **test_matching)
-        # assert os.path.exists(
-        #     os.path.join(output_path, "matching_report_test.txt")
-        # )
+    with set_up_input() as input_path:
+        match(input_path=input_path, **test_matching)
+        assert os.path.exists(
+            os.path.join(test_matching['output_path'], "matching_report_test.txt")
+        )
 
 
 def test_categorical_get_bool_index():

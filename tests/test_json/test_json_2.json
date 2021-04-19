@@ -4,16 +4,19 @@
     "controls": "input_controls.csv"
   },
   "config": {
-    "matches_per_case": 3,
+    "matches_per_case": 4,
     "match_variables": {
       "sex": "category",
-      "age": 5
+      "age": 5,
+      "indexdate": "month_only",
+      "stp":"category"
     },
     "index_variable": "indexdate",
     "closest_match_columns": [
       "age"
     ],
     "input_path": "tests/test_data",
-    "output_path": "tests/test_output/test_1"
+    "output_path": "tests/test_output/test_2",
+    "output_suffix": "_test_data"
   }
 }
