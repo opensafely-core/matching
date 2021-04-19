@@ -55,7 +55,7 @@ pep517==0.10.0
     # via pip-tools
 pillow==8.1.1
     # via matplotlib
-pip-tools==6.0.1
+pip-tools==6.1.0
     # via -r requirements.in
 pluggy==0.13.1
     # via pytest
