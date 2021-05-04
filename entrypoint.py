@@ -3,11 +3,11 @@ import argparse
 import json
 
 from osmatching import match
-from utils_entrypoint import load_default_args
+from utils_entrypoint import load_config
 
 def load_matching_config(input_files, match_config):
 
-    processed_match_config = load_default_args(match_config)
+    processed_match_config = load_config(match_config)
 
     match(case_csv=input_files['cases'],
           match_csv=input_files['controls'],

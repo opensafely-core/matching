@@ -1,33 +1,29 @@
 
+DEFAULTS = {
+        "closest_match_variable":  None,
+        "date_exclusion_variables": None,
+        "min_matches_per_case": 0,
+        "replace_match_index_date_with_case": None,
+        "output_suffix": "",
+        "indicator_variable_name": "case",
+        "output_path": "outputs/",
+        "input_path": "inputs/",
+        "drop_cases_from_matches": False,
+}
 
-def load_default_args(match_config):
-    """ loads default args into the config"""
+def load_config(match_config):
+    """
+    Takes in match configuration and changes these key-value pairs
+    where indicated by the match config. All other key-value pairs
+    are left as default values
 
-    if "closest_match_variable" not in match_config:
-        match_config["closest_match_variable"] = None
+    Args:
+        match_config (dict): dictionary of the match configuration
+            taken from json
 
-    if "date_exclusion_variables" not in match_config:
-        match_config["date_exclusion_variables"] = None
-
-    if "min_matches_per_case" not in match_config:
-        match_config["min_matches_per_case"] = 0
-
-    if "replace_match_index_date_with_case" not in match_config:
-        match_config["replace_match_index_date_with_case"] = None
-
-    if "output_suffix" not in match_config:
-        match_config["output_suffix"] = ""
-
-    if "indicator_variable_name" not in match_config:
-        match_config["indicator_variable_name"] = "case"
-
-    if "output_path" not in match_config:
-        match_config["output_path"] = "tests/test_output"
-
-    if "input_path" not in match_config:
-        match_config["input_path"] = "tests/test_data"
-
-    if "drop_cases_from_matches" not in match_config:
-        match_config["drop_cases_from_matches"] = False
-
-    return match_config
+    Returns:
+        Dict (cfg): Configuration dictionary to be passed to entry point.
+    """
+    cfg = DEFAULTS.copy()
+    cfg.update(match_config)
+    return cfg
