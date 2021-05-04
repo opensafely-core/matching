@@ -2,3 +2,7 @@
 __pycache__
 .python-version
 !.gitkeep
+.idea
+tests/test_output/test_1/m*
+tests/test_output/test_2/m*
+tests/test_output/test_3/m*

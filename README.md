@@ -195,7 +195,7 @@ match(
         "previous_stroke_hospital": "before",
     },
     output_suffix="_pneumonia",
-    output_path="output",
+    output_path="test_data",
 )
 ```
 **Outputs:**\
@@ -236,7 +236,7 @@ match(
         "previous_stroke_hospital": "before",
     },
     output_suffix="_control_2019",
-    output_path="output",
+    output_path="test_data",
 )
 ```
 **Outputs:**\
@@ -275,7 +275,7 @@ match(
         "previous_stroke_hospital": "before",
     },
     output_suffix="_control_2020",
-    output_path="output",
+    output_path="test_data",
 )
 ```
 **Outputs:**\
@@ -307,7 +307,7 @@ pneumonia = {
         "previous_stroke_hospital": "before",
     },
     "output_suffix": "pneumonia",
-    "output_path": "output",
+    "output_path": "test_data",
 }
 match(**pneumonia)
 ```

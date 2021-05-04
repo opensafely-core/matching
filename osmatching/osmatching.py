@@ -1,3 +1,4 @@
+"""Main program that does matching"""
 import os
 import copy
 from datetime import datetime
@@ -12,7 +13,7 @@ def import_csvs(
     match_variables,
     date_exclusion_variables,
     index_date_variable,
-    output_path,
+    input_path="tests/test_data",
     replace_match_index_date_with_case=None,
 ):
     """
@@ -20,11 +21,11 @@ def import_csvs(
     Also sets the correct data types for the matching variables.
     """
     cases = pd.read_csv(
-        os.path.join(output_path, f"{case_csv}.csv"),
+        os.path.join(input_path, f"{case_csv}"),
         index_col="patient_id",
     )
     matches = pd.read_csv(
-        os.path.join(output_path, f"{match_csv}.csv"),
+        os.path.join(input_path, f"{match_csv}"),
         index_col="patient_id",
     )
 
@@ -50,6 +51,7 @@ def import_csvs(
         for var in date_exclusion_variables:
             cases[var] = pd.to_datetime(cases[var])
             matches[var] = pd.to_datetime(matches[var])
+
     ## Format index date as date
     cases[index_date_variable] = pd.to_datetime(cases[index_date_variable])
     if replace_match_index_date_with_case is None:
@@ -202,7 +204,8 @@ def match(
     replace_match_index_date_with_case=None,
     indicator_variable_name="case",
     output_suffix="",
-    output_path="output",
+    output_path="tests/test_output",
+    input_path="tests/test_data",
     drop_cases_from_matches=False
 ):
     """
@@ -250,7 +253,7 @@ def match(
         match_variables,
         date_exclusion_variables,
         index_date_variable,
-        output_path,
+        input_path,
         replace_match_index_date_with_case,
     )
 
@@ -384,7 +387,7 @@ def compare_populations(matched_cases, matched_matches, closest_match_variables)
     """
     Takes the list of closest_match_variables and describes each of them for the matched
     case and matched control population, so that their similarity can be checked.
-    Returns a list strings corresponding to the rows of the describe() output, to be
+    Returns a list strings corresponding to the rows of the describe() test_data, to be
     passed to matching_report(). Returns empty list if no closest_match_variables are
     specified.
     """
