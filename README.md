@@ -19,7 +19,7 @@ This is expected to be in two CSVs - one `case_csv` for the case/exposed group a
 
 Matching is run by calling the match function with at least the required arguments, as per:
 ```py
-from match import match
+from osmatching import match
 
 match(
     case_csv="input_cases",
@@ -67,7 +67,7 @@ A string variable (format: "YYYY-MM-DD") relating to the index date for each cas
 A Python list (e.g `["age", "months_since_diagnosis"]`) containing variables that you want to find the closest match on. The order given in the list determines the priority of sorting (first is highest priority).
 
 `date_exclusion_variables`(default: `None`)\
-A Python dictionary containing a list of date variables (as keys) to use to exclude patients, relative to the index date. Patients who have a date in the specified column either `"before"` or `"after"` the index date are excluded. `"before"` or `"after"` is indicated by the values in the dictionary for each variable.
+A Python dictionary containing a list of date variables (as keys) to use to exclude patients, relative to the index date. Patients who have a date in the specified variable either `"before"` or `"after"` the index date are excluded. `"before"` or `"after"` is indicated by the values in the dictionary for each variable.
 
 `min_matches_per_case` (default: 0)\
 An integer that determines the minimum number of acceptable matches for each case. Sets of cases and matches where there are fewer than the specified number are dropped from the output data.
@@ -173,7 +173,7 @@ Match COVID population to pneumonia population with:
  - greedy matching on age 
  - excluding patients who died or had various outcomes before their index date
 ```py
-from match import match
+from osmatching import match
 
 match(
     case_csv="input_covid",
@@ -186,7 +186,7 @@ match(
         "indexdate": "month_only",
     },
     index_date_variable="indexdate",
-    closest_match_columns=["age"],
+    closest_match_variables=["age"],
     date_exclusion_variables={
         "died_date_ons": "before",
         "previous_vte_gp": "before",
@@ -213,7 +213,7 @@ Match COVID population to general population from 2019 with:
  - excluding patients who died or had various outcomes before their index date
  - case/match groups where there isn't at least one match are excluded
 ```py
-from match import match
+from osmatching import match
 
 match(
     case_csv="input_covid",
@@ -225,7 +225,7 @@ match(
         "stp": "category",
     },
     index_date_variable="indexdate",
-    closest_match_columns=["age"],
+    closest_match_variables=["age"],
     min_matches_per_case=1,
     replace_match_index_date_with_case="1_year_earlier",
     date_exclusion_variables={
@@ -253,7 +253,7 @@ Match COVID population to general population from 2020 with:
  - greedy matching on age 
  - excluding patients who died or had various outcomes before their index date
 ```py
-from match import match
+from osmatching import match
 
 match(
     case_csv="input_covid",
@@ -264,7 +264,7 @@ match(
         "age": 1,
         "stp": "category",
     },
-    closest_match_columns=["age"],
+    closest_match_variables=["age"],
     replace_match_index_date_with_case="no_offset",
     index_date_variable="indexdate",
     date_exclusion_variables={
@@ -297,7 +297,7 @@ pneumonia = {
         "stp": "category",
         "indexdate": "month_only",
     },
-    "closest_match_columns": ["age"],
+    "closest_match_variables": ["age"],
     "index_date_variable": "indexdate",
     "date_exclusion_variables": {
         "died_date_ons": "before",
