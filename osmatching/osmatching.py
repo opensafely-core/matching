@@ -1,7 +1,8 @@
 """Main program that does matching"""
-import os
 import copy
+import os
 from datetime import datetime
+
 import pandas as pd
 
 NOT_PREVIOUSLY_MATCHED = -9
@@ -206,7 +207,7 @@ def match(
     output_suffix="",
     output_path="tests/test_output",
     input_path="tests/test_data",
-    drop_cases_from_matches=False
+    drop_cases_from_matches=False,
 ):
     """
     Wrapper function that calls functions to:
