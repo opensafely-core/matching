@@ -46,7 +46,7 @@ jobs:
     - name: Install wheel package
       run: |
         pip install wheel
-    - name: Generate correct value for VERSION file
+    - name: Generate correct value for version.py file
       run: |
         echo ${{ needs.tag-new-version.outputs.tag }} > VERSION
     - name: Build package
