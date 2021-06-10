@@ -4,9 +4,11 @@ define USAGE
 Run commands for a project
 
 Commands:
-	format    Runs black and isort over all python files
-	lint      Lint all python files using flake8
-	typehint  Runs mypy over code base with --ignore-missing-imports flag
+	format    	Runs black and isort over all python files
+	lint      	Lint all python files using flake8
+	typehint  	Runs mypy over code base with --ignore-missing-imports flag
+	build     	Build docker image
+	test-docker	Test Docker image can be built and used
 
 endef
 
@@ -40,4 +42,5 @@ build:
 
 .PHONY: test-docker
 test-docker: build
-	docker run --rm -v tests:/workspace $(IMAGE_NAME) test_data/input.csv --config test_json/test1_config.json
+	docker run --rm -v tests:/workspace $(IMAGE_NAME) --cases test_data/input_cases.csv --controls test_data/input_controls.csv --config test_json/test_json_1.json
+

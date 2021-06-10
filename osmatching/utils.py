@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 DEFAULTS = {
     "closest_match_variable": None,
     "date_exclusion_variables": None,
@@ -11,7 +13,7 @@ DEFAULTS = {
 }
 
 
-def load_config(match_config):
+def load_config(match_config: Dict) -> Dict[str, Any]:
     """
     Takes in match configuration and changes these key-value pairs
     where indicated by the match config. All other key-value pairs

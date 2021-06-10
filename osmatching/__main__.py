@@ -3,6 +3,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+from typing import Dict
 
 from osmatching.osmatching import match
 from osmatching.utils import load_config
@@ -44,7 +45,7 @@ class ActionConfig:
         )
 
 
-def load_matching_config(cases, controls, config):
+def load_matching_config(cases: str, controls: str, config: Dict):
 
     processed_match_config = load_config(config)
 
