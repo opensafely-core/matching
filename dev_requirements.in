@@ -1,5 +1,5 @@
-# action packages
-opensafely-cohort-extractor
+# main functionality
+-e file:.
 
 # tooling and testing
 pip-tools
