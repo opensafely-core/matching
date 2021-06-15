@@ -15,15 +15,19 @@ in the `project.yaml` file.
 
 Example `project.yaml`
 ```yaml 
-matches_per_case: 3
-match_variables:
-  sex: category
-  age: 5
-index_variable: indexdate
-closest_match_columns:
-    - age
-input_path: tests/test_data
-output_path: tests/test_output/test_1
+actions: 
+  match_cohorts:
+    run: match:latest --cases input_case.csv --controls input_controls.csv
+config:
+  matches_per_case: 3
+  match_variables:
+    sex: category
+    age: 5
+  index_variable: indexdate
+  closest_match_columns:
+      - age
+  input_path: tests/test_data
+  output_path: tests/test_output/test_1
 ```
 
 ### Methodological notes
