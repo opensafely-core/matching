@@ -1,10 +1,12 @@
 from setuptools import find_namespace_packages, setup
+import os
 
-from osmatching.version import __version__
+with open(os.path.join("osmatching", "VERSION")) as f:
+    version = f.read().strip()
 
 setup(
     name="opensafely-matching",
-    version=__version__,
+    version=version,
     packages=find_namespace_packages(exclude=["tests"]),
     url="https://github.com/opensafely/matching",
     description="Command line tool for matching cases to controls",

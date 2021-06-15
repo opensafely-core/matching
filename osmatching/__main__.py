@@ -1,13 +1,12 @@
 """ Command line tool for using match """
 import argparse
 import json
-import os
+from importlib.metadata import version
 from pathlib import Path
 from typing import Dict
 
 from osmatching.osmatching import match
 from osmatching.utils import load_config
-from osmatching.version import __version__
 
 
 class ActionConfig:
@@ -83,7 +82,7 @@ def main():
 
     # version
     parser.add_argument(
-        "--version", action="version", version=f"opensafely-matching {__version__}"
+        "--version", action="version", version=f"opensafely-matching {version('opensafely-matching')}"
     )
 
     # Cases
