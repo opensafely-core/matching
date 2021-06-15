@@ -36,11 +36,9 @@ typehint:
 	mypy --ignore-missing-imports --exclude='venv/' ./
 
 IMAGE_NAME=local-matching
-.PHONY: build
 build:
 	docker build . -t $(IMAGE_NAME)
 
-.PHONY: test-docker
 test-docker: build
-	docker run --rm -v tests:/workspace $(IMAGE_NAME) --cases test_data/input_cases.csv --controls test_data/input_controls.csv --config test_json/test_json_1.json
+	docker run --rm -v :/workspace $(IMAGE_NAME) --cases input_cases.csv --controls input_controls.csv --config tests/test_json/test_json_1.json
 
