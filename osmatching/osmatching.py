@@ -244,7 +244,9 @@ def match(
     def matching_report(text_to_write: List, erase: bool = False) -> None:
         if erase and os.path.isfile(report_path):
             os.remove(report_path)
-        with open(report_path, "a") as txt:
+
+        os.makedirs(output_path, exist_ok=True)
+        with open(report_path, "w+") as txt:
             for line in text_to_write:
                 txt.writelines(f"{line}\n")
                 print(line)
