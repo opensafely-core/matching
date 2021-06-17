@@ -1,0 +1,10 @@
+# main functionality
+-e file:.
+
+# tooling and testing
+pip-tools
+pytest
+black
+flake8
+mypy
+isort

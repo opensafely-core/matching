@@ -1,19 +1,13 @@
 {
-  "inputs": {
-    "cases": "input_cases.csv",
-    "controls": "input_controls.csv"
+  "matches_per_case": 3,
+  "match_variables": {
+    "sex": "category",
+    "age": 5
   },
-  "config": {
-    "matches_per_case": 3,
-    "match_variables": {
-      "sex": "category",
-      "age": 5
-    },
-    "index_variable": "indexdate",
-    "closest_match_columns": [
-      "age"
-    ],
-    "input_path": "tests/test_data",
-    "output_path": "tests/test_output/test_1"
-  }
+  "index_variable": "indexdate",
+  "closest_match_columns": [
+    "age"
+  ],
+  "input_path": "tests/test_data",
+  "output_path": "tests/test_output/test_1"
 }

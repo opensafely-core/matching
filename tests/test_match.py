@@ -6,17 +6,11 @@ from tempfile import TemporaryDirectory
 
 import pandas as pd
 
-from osmatching.osmatching import (
-    match,
-    get_bool_index,
-    pre_calculate_indices,
-    get_eligible_matches,
-    date_exclusions,
-    greedily_pick_matches,
-    get_date_offset,
-    compare_populations,
-    NOT_PREVIOUSLY_MATCHED,
-)
+from osmatching.osmatching import (NOT_PREVIOUSLY_MATCHED, compare_populations,
+                                   date_exclusions, get_bool_index,
+                                   get_date_offset, get_eligible_matches,
+                                   greedily_pick_matches, match,
+                                   pre_calculate_indices)
 
 
 @contextmanager
@@ -63,13 +57,13 @@ def test_match_smoke_test():
             "previous_stroke_hospital": "before",
         },
         "output_suffix": "_test",
-        "output_path": "tests/test_output"
+        "output_path": "tests/test_output",
     }
 
     with set_up_input() as input_path:
         match(input_path=input_path, **test_matching)
         assert os.path.exists(
-            os.path.join(test_matching['output_path'], "matching_report_test.txt")
+            os.path.join(test_matching["output_path"], "matching_report_test.txt")
         )
 
 
