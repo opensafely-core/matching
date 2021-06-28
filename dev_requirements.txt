@@ -24,18 +24,18 @@ isort==5.8.0
     # via -r dev_requirements.in
 mccabe==0.6.1
     # via flake8
+mypy==0.910
+    # via -r dev_requirements.in
 mypy-extensions==0.4.3
     # via
     #   black
     #   mypy
-mypy==0.902
-    # via -r dev_requirements.in
 numpy==1.20.3
     # via pandas
 packaging==20.9
     # via pytest
 pandas==1.2.4
-    # via opensafely-matching
+    # via sanitized-package
 pathspec==0.8.1
     # via black
 pep517==0.10.0
