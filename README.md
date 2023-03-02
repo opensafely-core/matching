@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7691460.svg)](https://doi.org/10.5281/zenodo.7691460)
+
 # Simple categorical and scalar variable matching
 
 This tool matches patients in one `.csv` to a specified number of matches in another `.csv`. It does this according to a specified list of categorical and/or scalar variables. 
