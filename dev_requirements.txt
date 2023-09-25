@@ -24,18 +24,18 @@ isort==5.8.0
     # via -r dev_requirements.in
 mccabe==0.6.1
     # via flake8
+mypy==0.902
+    # via -r dev_requirements.in
 mypy-extensions==0.4.3
     # via
     #   black
     #   mypy
-mypy==0.902
-    # via -r dev_requirements.in
-numpy==1.20.3
+numpy==1.26.0
     # via pandas
 packaging==20.9
     # via pytest
-pandas==1.2.4
-    # via opensafely-matching
+pandas==2.1.1
+    # via sanitized-package
 pathspec==0.8.1
     # via black
 pep517==0.10.0
@@ -54,7 +54,7 @@ pyparsing==2.4.7
     # via packaging
 pytest==6.2.4
     # via -r dev_requirements.in
-python-dateutil==2.8.1
+python-dateutil==2.8.2
     # via pandas
 pytz==2021.1
     # via pandas
@@ -70,6 +70,8 @@ toml==0.10.2
     #   pytest
 typing-extensions==3.10.0.0
     # via mypy
+tzdata==2023.3
+    # via pandas
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip
