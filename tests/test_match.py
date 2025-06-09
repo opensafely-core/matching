@@ -1,40 +1,18 @@
-import os
-import shutil
-from contextlib import contextmanager
-from glob import glob
-from tempfile import TemporaryDirectory
+from pathlib import Path
 
 import pandas as pd
 
-from osmatching.osmatching import (NOT_PREVIOUSLY_MATCHED, compare_populations,
+from osmatching.osmatching import (NOT_PREVIOUSLY_MATCHED,
                                    date_exclusions, get_bool_index,
                                    get_date_offset, get_eligible_matches,
                                    greedily_pick_matches, match,
                                    pre_calculate_indices)
 
 
-@contextmanager
-def set_up_input():
-    """Copy the CSV files in tests/test_data to a temporary directory, and yield
-    the path to this directory.
-
-    This should be used as a context manager:
-
-    with set_up_output() as output_path:
-        match(output_path=output_path, **pneumonia)
-        assert os.path.exists(
-            os.path.join(output_path, "matching_report_input_pneumonia.txt")
-        )
-    """
-
-    input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data")
-    with TemporaryDirectory() as dir_path:
-        for path in glob(os.path.join(input_path, "*.csv")):
-            shutil.copy(path, dir_path)
-        yield dir_path
+FIXTURE_PATH = Path(__file__).parent / "test_data"
 
 
-def test_match_smoke_test():
+def test_match_smoke_test(tmp_path):
     """Test that match() runs and produces a matching report."""
 
     test_matching = {
@@ -57,14 +35,11 @@ def test_match_smoke_test():
             "previous_stroke_hospital": "before",
         },
         "output_suffix": "_test",
-        "output_path": "tests/test_output",
+        "output_path": tmp_path / "test_output",
     }
 
-    with set_up_input() as input_path:
-        match(input_path=input_path, **test_matching)
-        assert os.path.exists(
-            os.path.join(test_matching["output_path"], "matching_report_test.txt")
-        )
+    match(input_path=FIXTURE_PATH, **test_matching)
+    assert (test_matching["output_path"] / "matching_report_test.txt").exists()
 
 
 def test_categorical_get_bool_index():
