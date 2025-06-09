@@ -394,8 +394,8 @@ def match(
     matched_matches.to_csv(
         os.path.join(output_path, f"matched_matches{output_suffix}.csv")
     )
-    appended = matched_cases.append(matched_matches)
-    appended.to_csv(os.path.join(output_path, f"matched_combined{output_suffix}.csv"))
+    combined = pd.concat([matched_cases, matched_matches])
+    combined.to_csv(os.path.join(output_path, f"matched_combined{output_suffix}.csv"))
 
 
 def compare_populations(
