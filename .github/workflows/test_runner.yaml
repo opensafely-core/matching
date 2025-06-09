@@ -7,6 +7,10 @@ jobs:
     runs-on: ubuntu-latest
     name: Run test suite
 
+    strategy:
+      matrix:
+        python-docker-image-version: ["v1", "v2"]
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -19,6 +23,11 @@ jobs:
         pip install -r dev_requirements.txt
     - name: Run tests
       run: python -m pytest
+    - name: Install opensafely
+      run: pip install opensafely
+    - name: Run test suite with opensafely
+      run: opensafely exec python:${{ matrix.python-docker-image-version }}
+
   test-package-build:
     runs-on: ubuntu-latest
     name: Test we can build PyPI package
