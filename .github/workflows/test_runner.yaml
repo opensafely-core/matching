@@ -6,28 +6,38 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     name: Run test suite
+
+    strategy:
+      matrix:
+        python-docker-image-version: ["v1", "v2"]
+
     steps:
     - name: Checkout
-      uses: actions/checkout@v1
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v1
+      uses: actions/checkout@v4
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v5
       with:
-        python-version: 3.7
+        python-version: 3.8
     - name: Install dependencies
       run: |
         pip install -r dev_requirements.txt
     - name: Run tests
       run: python -m pytest
+    - name: Install opensafely
+      run: pip install opensafely
+    - name: Run test suite with opensafely
+      run: opensafely exec python:${{ matrix.python-docker-image-version }} pytest
+
   test-package-build:
     runs-on: ubuntu-latest
     name: Test we can build PyPI package
     steps:
     - name: Checkout
-      uses: actions/checkout@v1
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v1
+      uses: actions/checkout@v4
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v5
       with:
-        python-version: 3.7
+        python-version: 3.8
     - name: Install wheel package
       run: |
         pip install wheel
