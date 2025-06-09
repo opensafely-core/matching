@@ -26,7 +26,7 @@ jobs:
     - name: Install opensafely
       run: pip install opensafely
     - name: Run test suite with opensafely
-      run: opensafely exec python:${{ matrix.python-docker-image-version }}
+      run: opensafely exec python:${{ matrix.python-docker-image-version }} pytest
 
   test-package-build:
     runs-on: ubuntu-latest
