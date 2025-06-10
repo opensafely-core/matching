@@ -105,6 +105,7 @@ fix: devenv
     $BIN/ruff format .
 
 
-# Run the dev project
-run: devenv
-    echo "Not implemented yet"
+# Run the CLI tool with test data by default
+run cases="tests/test_data/input_cases.csv" controls="tests/test_data/input_controls.csv" config="tests/test_data/config.json": devenv
+    $BIN/match --cases {{ cases }} --controls {{ controls }} --config {{ config }}
+    
