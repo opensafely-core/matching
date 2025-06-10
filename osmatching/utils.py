@@ -12,7 +12,6 @@ DEFAULTS = {
     "output_suffix": "",
     "indicator_variable_name": "case",
     "output_path": "outputs/",
-    "input_path": "inputs/",
     "drop_cases_from_matches": False,
 }
 

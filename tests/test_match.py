@@ -12,6 +12,7 @@ from osmatching.osmatching import (
     match,
     pre_calculate_indices,
 )
+from osmatching.utils import load_dataframe
 
 
 FIXTURE_PATH = Path(__file__).parent / "test_data"
@@ -21,8 +22,6 @@ def test_match_smoke_test(tmp_path):
     """Test that match() runs and produces a matching report."""
 
     test_matching = {
-        "case_csv": "input_cases.csv",
-        "match_csv": "input_controls.csv",
         "matches_per_case": 1,
         "match_variables": {
             "sex": "category",
@@ -43,7 +42,11 @@ def test_match_smoke_test(tmp_path):
         "output_path": tmp_path / "test_output",
     }
 
-    match(input_path=FIXTURE_PATH, **test_matching)
+    match(
+        case_df=load_dataframe(FIXTURE_PATH / "input_cases.csv"),
+        match_df=load_dataframe(FIXTURE_PATH / "input_controls.csv"),
+        **test_matching,
+    )
     assert (test_matching["output_path"] / "matching_report_test.txt").exists()
 
 

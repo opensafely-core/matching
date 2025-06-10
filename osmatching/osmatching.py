@@ -3,32 +3,25 @@
 import copy
 import os
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
-
-from osmatching.utils import load_dataframe
 
 
 NOT_PREVIOUSLY_MATCHED = -9
 
 
-def import_csvs(
-    case_csv: str,
-    match_csv: str,
+def import_data(
+    cases: pd.DataFrame,
+    matches: pd.DataFrame,
     match_variables: Dict,
     date_exclusion_variables: Optional[Dict[Any, Any]],
     index_date_variable: str,
-    input_path: str = "tests/test_data",
     replace_match_index_date_with_case: Optional[str] = None,
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Imports the two csvs specified under case_csv and match_csv.
-    Also sets the correct data types for the matching variables.
+    Sets the correct data types for the matching variables.
     """
-    cases = load_dataframe(Path(input_path) / case_csv)
-    matches = load_dataframe(Path(input_path) / match_csv)
 
     ## Set data types for matching variables
     month_only = []
@@ -205,8 +198,8 @@ def get_date_offset(offset_str: str) -> Optional[pd.DataFrame]:
 
 
 def match(
-    case_csv: str,
-    match_csv: str,
+    case_df: str,
+    match_df: str,
     matches_per_case: int,
     match_variables: Dict,
     index_date_variable: str,
@@ -217,7 +210,6 @@ def match(
     indicator_variable_name: str = "case",
     output_suffix: str = "",
     output_path: str = "tests/test_output",
-    input_path: str = "tests/test_data",
     drop_cases_from_matches: bool = False,
 ) -> None:
     """
@@ -261,19 +253,18 @@ def match(
     match_variables = copy.deepcopy(match_variables)
 
     ## Import_data
-    cases, matches = import_csvs(
-        case_csv,
-        match_csv,
+    cases, matches = import_data(
+        case_df,
+        match_df,
         match_variables,
         date_exclusion_variables,
         index_date_variable,
-        input_path,
         replace_match_index_date_with_case,
     )
 
     matching_report(
         [
-            "CSV import:",
+            "Data import:",
             f"Completed {datetime.now()}",
             f"Cases    {len(cases)}",
             f"Matches  {len(matches)}",
@@ -358,7 +349,6 @@ def match(
         ## Report number of matches for each case
         num_matches = len(matched_rows)
         cases.loc[case_id, "match_counts"] = num_matches
-
         ## Label matches with case ID if there are enough
         if num_matches >= min_matches_per_case:
             matches.loc[matched_rows, "set_id"] = case_id
