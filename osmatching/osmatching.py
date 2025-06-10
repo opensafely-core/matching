@@ -17,7 +17,6 @@ def import_data(
     match_variables: Dict,
     date_exclusion_variables: Optional[Dict[Any, Any]],
     index_date_variable: str,
-    replace_match_index_date_with_case: Optional[str] = None,
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Sets the correct data types for the matching variables.
@@ -27,11 +26,17 @@ def import_data(
     month_only = []
     for var, match_type in match_variables.items():
         if match_type == "category":
+            # arrow files already have category types, so we don't need to convert them
+            if cases[var].dtype.name == "category":
+                continue
             cases[var] = cases[var].astype("category")
             matches[var] = matches[var].astype("category")
         ## Extract month from month_only variables
         elif match_type == "month_only":
             month_only.append(var)
+            # Ensure our datetimes are strings before slicing
+            cases[var] = cases[var].astype("str")
+            matches[var] = matches[var].astype("str")
             cases[f"{var}_m"] = cases[var].str.slice(start=5, stop=7).astype("category")
             matches[f"{var}_m"] = (
                 matches[var].str.slice(start=5, stop=7).astype("category")
@@ -48,8 +53,7 @@ def import_data(
 
     ## Format index date as date
     cases[index_date_variable] = pd.to_datetime(cases[index_date_variable])
-    if replace_match_index_date_with_case is None:
-        matches[index_date_variable] = pd.to_datetime(matches[index_date_variable])
+    matches[index_date_variable] = pd.to_datetime(matches[index_date_variable])
 
     return cases, matches
 
@@ -259,7 +263,6 @@ def match(
         match_variables,
         date_exclusion_variables,
         index_date_variable,
-        replace_match_index_date_with_case,
     )
 
     matching_report(
