@@ -3,9 +3,12 @@
 import copy
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
+
+from osmatching.utils import load_dataframe
 
 
 NOT_PREVIOUSLY_MATCHED = -9
@@ -24,14 +27,8 @@ def import_csvs(
     Imports the two csvs specified under case_csv and match_csv.
     Also sets the correct data types for the matching variables.
     """
-    cases = pd.read_csv(
-        os.path.join(input_path, f"{case_csv}"),
-        index_col="patient_id",
-    )
-    matches = pd.read_csv(
-        os.path.join(input_path, f"{match_csv}"),
-        index_col="patient_id",
-    )
+    cases = load_dataframe(Path(input_path) / case_csv)
+    matches = load_dataframe(Path(input_path) / match_csv)
 
     ## Set data types for matching variables
     month_only = []
