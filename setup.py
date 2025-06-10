@@ -1,5 +1,7 @@
-from setuptools import find_namespace_packages, setup
 import os
+
+from setuptools import find_namespace_packages, setup
+
 
 with open(os.path.join("osmatching", "VERSION")) as f:
     version = f.read().strip()
