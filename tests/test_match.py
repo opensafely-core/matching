@@ -2,11 +2,16 @@ from pathlib import Path
 
 import pandas as pd
 
-from osmatching.osmatching import (NOT_PREVIOUSLY_MATCHED,
-                                   date_exclusions, get_bool_index,
-                                   get_date_offset, get_eligible_matches,
-                                   greedily_pick_matches, match,
-                                   pre_calculate_indices)
+from osmatching.osmatching import (
+    NOT_PREVIOUSLY_MATCHED,
+    date_exclusions,
+    get_bool_index,
+    get_date_offset,
+    get_eligible_matches,
+    greedily_pick_matches,
+    match,
+    pre_calculate_indices,
+)
 
 
 FIXTURE_PATH = Path(__file__).parent / "test_data"

@@ -1,0 +1,14 @@
+{
+  "matches_per_case": 3,
+  "match_variables": {
+    "sex": "category",
+    "age": 5
+  },
+  "index_variable": "indexdate",
+  "closest_match_columns": [
+    "age"
+  ],
+  "input_path": "tests/test_data",
+  "output_path": "tests/test_output/",
+  "output_suffix": "_test"
+}

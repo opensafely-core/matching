@@ -1,5 +1,6 @@
 from typing import Any, Dict
 
+
 DEFAULTS = {
     "closest_match_variable": None,
     "date_exclusion_variables": None,

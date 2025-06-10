@@ -4,4 +4,5 @@ __pycache__
 !.gitkeep
 .idea
 .venv/
+.coverage
 opensafely_matching.egg-info/

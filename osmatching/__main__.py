@@ -1,4 +1,5 @@
-""" Command line tool for using match """
+"""Command line tool for using match"""
+
 import argparse
 import json
 from importlib.metadata import version
@@ -34,18 +35,20 @@ class ActionConfig:
 
     @classmethod
     def add_to_parser(
-        cls, parser, help="The configuration for the matching action", validator=None
+        cls,
+        parser,
+        helptext="The configuration for the matching action",
+        validator=None,
     ):
         parser.add_argument(
             "--config",
             required=True,
-            help=help,
+            help=helptext,
             type=ActionConfig(validator),
         )
 
 
 def load_matching_config(cases: str, controls: str, config: Dict):
-
     processed_match_config = load_config(config)
 
     match(
@@ -82,7 +85,9 @@ def main():
 
     # version
     parser.add_argument(
-        "--version", action="version", version=f"opensafely-matching {version('opensafely-matching')}"
+        "--version",
+        action="version",
+        version=f"opensafely-matching {version('opensafely-matching')}",
     )
 
     # Cases
