@@ -46,3 +46,7 @@ extend-ignore = [
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
+
+[tool.mypy]
+check_untyped_defs = true
+ignore_missing_imports = true

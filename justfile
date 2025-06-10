@@ -84,6 +84,11 @@ test *args: devenv
     $BIN/coverage report || $BIN/coverage html
 
 
+# run mypy type checker
+mypy *ARGS: devenv
+    $BIN/mypy osmatching/ tests/ "$@"
+
+
 format *args=".": devenv
     $BIN/ruff format --check {{ args }}
 
@@ -91,7 +96,7 @@ lint *args=".": devenv
     $BIN/ruff check {{ args }}
 
 # run the various dev checks but does not change any files
-check: format lint
+check: format lint mypy
 
 
 # fix formatting and import sort ordering
