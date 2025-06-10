@@ -2,9 +2,9 @@
 -e file:.
 
 # tooling and testing
+coverage
 pip-tools
 pytest
-black
-flake8
+pyyaml
 mypy
-isort
+ruff
