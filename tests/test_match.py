@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from osmatching.osmatching import (
     NOT_PREVIOUSLY_MATCHED,
@@ -15,10 +16,19 @@ from osmatching.osmatching import (
 from osmatching.utils import load_dataframe
 
 
-FIXTURE_PATH = Path(__file__).parent / "test_data"
+FIXTURE_PATH = Path(__file__).parent / "test_data" / "fixtures"
 
 
-def test_match_smoke_test(tmp_path):
+@pytest.mark.parametrize(
+    "input_cases_file,input_control_file",
+    [
+        ("input_cases.csv", "input_controls.csv"),
+        ("input_cases.csv.gz", "input_controls.csv.gz"),
+        ("input_cases.csv", "input_controls.csv.gz"),
+        ("input_cases.arrow", "input_controls.arrow"),
+    ],
+)
+def test_match_smoke_test(tmp_path, input_cases_file, input_control_file):
     """Test that match() runs and produces a matching report."""
 
     test_matching = {
@@ -26,25 +36,22 @@ def test_match_smoke_test(tmp_path):
         "match_variables": {
             "sex": "category",
             "age": 1,
-            "stp": "category",
+            "region": "category",
             "indexdate": "month_only",
         },
         "closest_match_variables": ["age"],
         "index_date_variable": "indexdate",
         "date_exclusion_variables": {
             "died_date_ons": "before",
-            "previous_vte_gp": "before",
-            "previous_vte_hospital": "before",
-            "previous_stroke_gp": "before",
-            "previous_stroke_hospital": "before",
+            "previous_event": "before",
         },
         "output_suffix": "_test",
         "output_path": tmp_path / "test_output",
     }
 
     match(
-        case_df=load_dataframe(FIXTURE_PATH / "input_cases.csv"),
-        match_df=load_dataframe(FIXTURE_PATH / "input_controls.csv"),
+        case_df=load_dataframe(FIXTURE_PATH / input_cases_file),
+        match_df=load_dataframe(FIXTURE_PATH / input_control_file),
         **test_matching,
     )
     assert (test_matching["output_path"] / "matching_report_test.txt").exists()

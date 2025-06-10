@@ -3,6 +3,7 @@ branch = true
 dynamic_context = "test_function"
 omit = [
   ".venv/*",
+  "tests/test_data/*",
 ]
 
 [tool.coverage.report]

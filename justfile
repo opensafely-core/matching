@@ -106,6 +106,6 @@ fix: devenv
 
 
 # Run the CLI tool with test data by default
-run cases="tests/test_data/input_cases.csv" controls="tests/test_data/input_controls.csv" config="tests/test_data/config.json": devenv
+run cases="tests/test_data/fixtures/input_cases.csv" controls="tests/test_data/fixtures/input_controls.csv" config="tests/test_data/fixtures/config.json": devenv
     $BIN/match --cases {{ cases }} --controls {{ controls }} --config {{ config }}
     

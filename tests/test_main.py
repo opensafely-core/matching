@@ -8,7 +8,7 @@ import pytest
 from osmatching.__main__ import main
 
 
-FIXTURE_PATH = Path(__file__).parent / "test_data"
+FIXTURE_PATH = Path(__file__).parent / "test_data" / "fixtures"
 
 
 @pytest.fixture(autouse=True)
