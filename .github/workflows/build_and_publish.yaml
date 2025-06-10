@@ -1,8 +1,14 @@
 name: Tag repo; build and publish assets
 on:
-  push:
+  workflow_run:
+    workflows:
+      - Test
     branches:
-      - master
+      - main
+    types:
+      - completed
+  # this allows us to trigger manually
+  workflow_dispatch:
 
 
 jobs:
@@ -26,10 +32,17 @@ jobs:
       - name: Bump version and push tag
         id: tag
         uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b  # v6.2
+        # As this workflow is currently written,
+        # this is a redundant check: the workflow should only ever run on push to main.
+        # But it is an extra safeguard and reminder of the behaviour of github-tag-action.
+        # Pull requests can end up being tagged by github-tag-action,
+        # which is probably undesirable and very confusing to work out what's happening.
+        # See https://github.com/opensafely-core/ehrql/commit/3e55492e9c1b537fb5057f19f11f53a713fbae46
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: false
-          release_branches: master
+          release_branches: main
 
 
   build-and-publish-package:
@@ -54,7 +67,7 @@ jobs:
       run: |
         python setup.py sdist bdist_wheel
     - name: Publish package
-      uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc  # v1.12.4
+      uses: pypa/gh-action-pypi-publish@15c56dba361d8335944d31a2ecd17d700fc7bcbc  # v1.90
       with:
         user: __token__
         password: ${{ secrets.PYPI_PASSWORD }}
