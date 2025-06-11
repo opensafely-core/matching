@@ -7,6 +7,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
 
+from osmatching.utils import write_output_file
+
 
 NOT_PREVIOUSLY_MATCHED = -9
 
@@ -215,6 +217,7 @@ def match(
     output_path: Union[Path, str] = Path("output"),
     output_suffix: str = "",
     drop_cases_from_matches: bool = False,
+    output_format: str = "csv",
 ) -> None:
     """
     Wrapper function that calls functions to:
@@ -380,11 +383,17 @@ def match(
         + scalar_comparisons
     )
 
-    ## Write to csvs
-    matched_cases.to_csv(output_path / f"matched_cases{output_suffix}.csv")
-    matched_matches.to_csv(output_path / f"matched_matches{output_suffix}.csv")
+    ## Write output files
+    write_output_file(
+        matched_cases, output_path / f"matched_cases{output_suffix}.{output_format}"
+    )
+    write_output_file(
+        matched_matches, output_path / f"matched_matches{output_suffix}.{output_format}"
+    )
     combined = pd.concat([matched_cases, matched_matches])
-    combined.to_csv(output_path / f"matched_combined{output_suffix}.csv")
+    write_output_file(
+        combined, output_path / f"matched_combined{output_suffix}.{output_format}"
+    )
 
 
 def compare_populations(

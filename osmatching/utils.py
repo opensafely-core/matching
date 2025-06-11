@@ -13,6 +13,7 @@ DEFAULTS = {
     "indicator_variable_name": "case",
     "output_path": "output",
     "drop_cases_from_matches": False,
+    "output_format": "arrow",
 }
 
 
@@ -44,3 +45,7 @@ def load_dataframe(file_path: Path):
     dataframe = getattr(pd, loaders[suffix])(file_path)
     dataframe.set_index("patient_id", inplace=True)
     return dataframe
+
+
+def write_output_file(df, filepath):
+    df.to_csv(filepath)

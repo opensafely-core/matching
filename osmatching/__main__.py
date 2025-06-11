@@ -60,7 +60,7 @@ class LoadDataframe(argparse.Action):
         setattr(namespace, self.dest, load_dataframe(data_filepath))
 
 
-def load_matching_config(cases: str, controls: str, config: Dict):
+def load_matching_config(cases: str, controls: str, config: Dict, output_format: str):
     processed_match_config = load_config(config)
 
     match(
@@ -79,6 +79,7 @@ def load_matching_config(cases: str, controls: str, config: Dict):
         output_path=processed_match_config["output_path"],
         drop_cases_from_matches=processed_match_config["drop_cases_from_matches"],
         output_suffix=processed_match_config["output_suffix"],
+        output_format=processed_match_config["output_format"],
     )
 
 
@@ -113,11 +114,23 @@ def main():
         help="Data file that contains the cohort for cases",
     )
 
+    parser.add_argument(
+        "--output-format",
+        choices=["arrow", "csv.gz", "csv"],
+        help="Format for the output files",
+        default="csv",
+    )
+
     # parse args
     args = parser.parse_args()
 
     # run matching
-    load_matching_config(cases=args.cases, controls=args.controls, config=args.config)
+    load_matching_config(
+        cases=args.cases,
+        controls=args.controls,
+        config=args.config,
+        output_format=args.output_format,
+    )
 
 
 if __name__ == "__main__":
