@@ -1,8 +1,8 @@
 """Main program that does matching"""
 
 import copy
-import os
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
@@ -212,8 +212,8 @@ def match(
     min_matches_per_case: int = 0,
     replace_match_index_date_with_case: Optional[str] = None,
     indicator_variable_name: str = "case",
+    output_path: Union[Path, str] = Path("output"),
     output_suffix: str = "",
-    output_path: str = "tests/test_output",
     drop_cases_from_matches: bool = False,
 ) -> None:
     """
@@ -231,22 +231,21 @@ def match(
     if min_matches_per_case > matches_per_case:
         raise ValueError("min_matches_per_case cannot be greater than matches_per_case")
 
-    report_path = os.path.join(
-        output_path,
-        f"matching_report{output_suffix}.txt",
-    )
+    # Make sure the output path is a Path and it exists
+    output_path = Path(output_path)
+    output_path.mkdir(parents=True, exist_ok=True)
 
-    def matching_report(text_to_write: List, erase: bool = False) -> None:
-        if erase and os.path.isfile(report_path):
-            os.remove(report_path)
+    report_path = output_path / f"matching_report{output_suffix}.txt"
 
-        os.makedirs(output_path, exist_ok=True)
-        with open(report_path, "w+") as txt:
-            for line in text_to_write:
-                txt.writelines(f"{line}\n")
-                print(line)
-            txt.writelines("\n")
-            print("\n")
+    def matching_report(text_list: List, erase: bool = False) -> None:
+        if erase and report_path.is_file():
+            report_path.unlink()
+
+        text_to_write = "\n".join(text_list)
+        text_to_write += "\n\n"
+        with report_path.open("a") as report_file:
+            report_file.write(text_to_write)
+        print(text_to_write)
 
     matching_report(
         [f"Matching started at: {datetime.now()}"],
@@ -382,12 +381,10 @@ def match(
     )
 
     ## Write to csvs
-    matched_cases.to_csv(os.path.join(output_path, f"matched_cases{output_suffix}.csv"))
-    matched_matches.to_csv(
-        os.path.join(output_path, f"matched_matches{output_suffix}.csv")
-    )
+    matched_cases.to_csv(output_path / f"matched_cases{output_suffix}.csv")
+    matched_matches.to_csv(output_path / f"matched_matches{output_suffix}.csv")
     combined = pd.concat([matched_cases, matched_matches])
-    combined.to_csv(os.path.join(output_path, f"matched_combined{output_suffix}.csv"))
+    combined.to_csv(output_path / f"matched_combined{output_suffix}.csv")
 
 
 def compare_populations(

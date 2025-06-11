@@ -11,7 +11,7 @@ DEFAULTS = {
     "replace_match_index_date_with_case": None,
     "output_suffix": "",
     "indicator_variable_name": "case",
-    "output_path": "outputs/",
+    "output_path": "output",
     "drop_cases_from_matches": False,
 }
 

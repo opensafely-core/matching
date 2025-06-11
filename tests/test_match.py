@@ -54,7 +54,13 @@ def test_match_smoke_test(tmp_path, input_cases_file, input_control_file):
         match_df=load_dataframe(FIXTURE_PATH / input_control_file),
         **test_matching,
     )
-    assert (test_matching["output_path"] / "matching_report_test.txt").exists()
+    report_path = test_matching["output_path"] / "matching_report_test.txt"
+    assert report_path.exists()
+    report_text = report_path.read_text()
+    # Check that we've got the expect first line
+    assert "Matching started at:" in report_text
+    # And the last block
+    assert "Number of available matches per case" in report_text
 
 
 def test_categorical_get_bool_index():
