@@ -81,3 +81,33 @@ def test_input_file_bad_type():
     ]
     with pytest.raises(ArgumentTypeError, match="Invalid file type"):
         main()
+
+
+def test_config_non_existent_file():
+    sys.argv = [
+        "match",
+        "--cases",
+        str(FIXTURE_PATH / "input_cases.csv"),
+        "--controls",
+        str(FIXTURE_PATH / "input_controls.csv"),
+        "--config",
+        "unknown/config.json",
+    ]
+
+    with pytest.raises(ArgumentTypeError, match="Could not parse unknown/config.json"):
+        main()
+
+
+def test_config_bad_json():
+    sys.argv = [
+        "match",
+        "--cases",
+        str(FIXTURE_PATH / "input_cases.csv"),
+        "--controls",
+        str(FIXTURE_PATH / "input_controls.csv"),
+        "--config",
+        "{foo}",
+    ]
+
+    with pytest.raises(ArgumentTypeError, match="Could not parse {foo}"):
+        main()

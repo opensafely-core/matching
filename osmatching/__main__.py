@@ -10,42 +10,19 @@ from osmatching.osmatching import match
 from osmatching.utils import file_suffix, load_config, load_dataframe
 
 
-class ActionConfig:
-    def __init__(self, validator=None):
-        self.validator = validator
-
-    def __call__(self, file_or_string):
-        path = Path(file_or_string)
+class ActionConfig(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        # values can be a path to a file, or a json string
+        path = Path(values)
         try:
             if path.exists():
                 with path.open() as f:
                     config = json.load(f)
             else:
-                config = json.loads(file_or_string)
+                config = json.loads(values)
         except json.JSONDecodeError as exc:
-            raise argparse.ArgumentTypeError(f"Could not parse {file_or_string}\n{exc}")
-
-        if self.validator:
-            try:
-                self.validator(config)
-            except Exception as exc:
-                raise argparse.ArgumentTypeError(f"Invalid action config:\n{exc}")
-
-        return config
-
-    @classmethod
-    def add_to_parser(
-        cls,
-        parser,
-        helptext="The configuration for the matching action",
-        validator=None,
-    ):
-        parser.add_argument(
-            "--config",
-            required=True,
-            help=helptext,
-            type=ActionConfig(validator),
-        )
+            raise argparse.ArgumentTypeError(f"Could not parse {values}\n{exc}")
+        setattr(namespace, self.dest, config)
 
 
 class LoadDataframe(argparse.Action):
@@ -93,7 +70,13 @@ def main():
     )
 
     # add configuration arg
-    ActionConfig.add_to_parser(parser)
+
+    parser.add_argument(
+        "--config",
+        required=True,
+        help="The configuration for the matching action",
+        action=ActionConfig,
+    )
 
     # version
     parser.add_argument(

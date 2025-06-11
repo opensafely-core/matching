@@ -10,6 +10,10 @@ omit = [
 fail_under = 87
 skip_covered = true
 show_missing = true
+exclude_also = [
+  # this condition is only true when a module is run as a script
+  'if __name__ == "__main__":',
+]
 
 [tool.coverage.html]
 show_contexts = true
