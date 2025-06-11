@@ -17,6 +17,12 @@ DEFAULTS = {
 }
 
 
+DATAFRAME_READER_WRITER = {
+    "read": {".csv": "read_csv", ".csv.gz": "read_csv", ".arrow": "read_feather"},
+    "write": {".csv": "to_csv", ".csv.gz": "to_csv", ".arrow": "to_feather"},
+}
+
+
 def load_config(match_config: Dict) -> Dict[str, Any]:
     """
     Takes in match configuration and changes these key-value pairs
@@ -40,12 +46,14 @@ def file_suffix(file_path: Path):
 
 
 def load_dataframe(file_path: Path):
-    loaders = {".csv": "read_csv", ".csv.gz": "read_csv", ".arrow": "read_feather"}
     suffix = file_suffix(file_path)
-    dataframe = getattr(pd, loaders[suffix])(file_path)
+    dataframe = getattr(pd, DATAFRAME_READER_WRITER["read"][suffix])(file_path)
     dataframe.set_index("patient_id", inplace=True)
     return dataframe
 
 
-def write_output_file(df, filepath):
-    df.to_csv(filepath)
+def write_output_file(df, file_path):
+    suffix = file_suffix(file_path)
+    # feather requires that we reset the index before writing
+    writer = getattr(df.reset_index(), DATAFRAME_READER_WRITER["write"][suffix])
+    writer(file_path)

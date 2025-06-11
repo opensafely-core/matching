@@ -20,16 +20,19 @@ FIXTURE_PATH = Path(__file__).parent / "test_data" / "fixtures"
 
 
 @pytest.mark.parametrize(
-    "input_cases_file,input_control_file",
+    "input_cases_file,input_control_file,output_format,output_ext",
     [
-        ("input_cases.csv", "input_controls.csv"),
-        ("input_cases.csv.gz", "input_controls.csv.gz"),
-        ("input_cases.csv", "input_controls.csv.gz"),
-        ("input_cases.arrow", "input_controls.arrow"),
+        # default output ext is arrow
+        ("input_cases.csv", "input_controls.csv", None, "arrow"),
+        ("input_cases.csv.gz", "input_controls.csv.gz", "csv", "csv"),
+        ("input_cases.csv", "input_controls.csv.gz", "csv.gz", "csv.gz"),
+        ("input_cases.arrow", "input_controls.arrow", "arrow", "arrow"),
     ],
 )
-def test_match_smoke_test(tmp_path, input_cases_file, input_control_file):
-    """Test that match() runs and produces a matching report."""
+def test_match_smoke_test(
+    tmp_path, input_cases_file, input_control_file, output_format, output_ext
+):
+    """Test that match() runs and produces a matching report and outputs."""
 
     test_matching = {
         "matches_per_case": 1,
@@ -48,6 +51,8 @@ def test_match_smoke_test(tmp_path, input_cases_file, input_control_file):
         "output_suffix": "_test",
         "output_path": tmp_path / "test_output",
     }
+    if output_format is not None:
+        test_matching["output_format"] = output_format
 
     match(
         case_df=load_dataframe(FIXTURE_PATH / input_cases_file),
@@ -61,6 +66,16 @@ def test_match_smoke_test(tmp_path, input_cases_file, input_control_file):
     assert "Matching started at:" in report_text
     # And the last block
     assert "Number of available matches per case" in report_text
+
+    for output_file_stem in [
+        "matched_cases_test",
+        "matched_matches_test",
+        "matched_combined_test",
+    ]:
+        output_filepath = (
+            test_matching["output_path"] / f"{output_file_stem}.{output_ext}"
+        )
+        assert output_filepath.exists()
 
 
 def test_categorical_get_bool_index():

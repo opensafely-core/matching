@@ -18,35 +18,41 @@ def reset_sys_argv():
     sys.argv = original_argv
 
 
-@pytest.fixture
-def cli_ouput_path(tmp_path):
+@pytest.fixture(params=["csv", "csv.gz", "arrow"])
+def cli_ouput_path(request, tmp_path):
     """
     Mock command line args to fixture data and yield temporary
     path to use as output path
     """
+    output_format = request.param
     # rewrite config output path to our temp path
     with open(FIXTURE_PATH / "config.json") as configfile:
         config = json.load(configfile)
         config["output_path"] = str(tmp_path)
+    # ADD config output_format
+    config["output_format"] = output_format
     with open(tmp_path / "config.json", "w") as test_configfile:
         json.dump(config, test_configfile)
 
     sys.argv = [
         "match",
         "--cases",
-        str(FIXTURE_PATH / "input_cases.csv"),
+        str(FIXTURE_PATH / f"input_cases.{output_format}"),
         "--controls",
-        str(FIXTURE_PATH / "input_controls.csv"),
+        str(FIXTURE_PATH / f"input_controls.{output_format}"),
         "--config",
         str(tmp_path / "config.json"),
+        "--output-format",
+        output_format,
     ]
-    yield tmp_path
+    yield tmp_path, output_format
 
 
 def test_main(cli_ouput_path):
-    output_path = cli_ouput_path
+    output_path, output_format = cli_ouput_path
     main()
     assert (output_path / "matching_report_test.txt").exists()
+    assert (output_path / f"matched_cases_test.{output_format}").exists()
 
 
 def test_input_file_does_not_exist():

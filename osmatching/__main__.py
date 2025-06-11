@@ -118,7 +118,7 @@ def main():
         "--output-format",
         choices=["arrow", "csv.gz", "csv"],
         help="Format for the output files",
-        default="csv",
+        default="arrow",
     )
 
     # parse args

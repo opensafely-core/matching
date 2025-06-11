@@ -217,7 +217,7 @@ def match(
     output_path: Union[Path, str] = Path("output"),
     output_suffix: str = "",
     drop_cases_from_matches: bool = False,
-    output_format: str = "csv",
+    output_format: str = "arrow",
 ) -> None:
     """
     Wrapper function that calls functions to:
@@ -229,7 +229,7 @@ def match(
         during matching for studies where the match index date comes from the case)
     - set the set_id as that of the case_id (this excludes them from being matched later)
     - set the index date of the match as that of the case (where desired)
-    - save the results as a csv
+    - save the results in the specified output format
     """
     if min_matches_per_case > matches_per_case:
         raise ValueError("min_matches_per_case cannot be greater than matches_per_case")
