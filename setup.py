@@ -7,7 +7,7 @@ with open(os.path.join("osmatching", "VERSION")) as f:
     version = f.read().strip()
 
 setup(
-    name="opensafely-matching",
+    name="opensafely_matching",
     version=version,
     packages=find_namespace_packages(exclude=["tests"]),
     url="https://github.com/opensafely/matching",
