@@ -60,9 +60,9 @@ jobs:
     - name: Install wheel package
       run: |
         pip install wheel
-    - name: Generate correct value for version.py file
+    - name: Generate correct value for VERSION file
       run: |
-        echo ${{ needs.tag-new-version.outputs.tag }} > VERSION
+        echo ${{ needs.tag-new-version.outputs.tag }} > osmatching/VERSION
     - name: Build package
       run: |
         python setup.py sdist bdist_wheel
