@@ -151,7 +151,9 @@ def date_exclusions(df1: pd.DataFrame, date_exclusion_variables: Dict, index_dat
         elif before_after == "after":
             variable_bool = df1[exclusion_var] > index_date
         else:
-            raise Exception(f"Date exclusion type '{exclusion_var}' invalid")
+            raise Exception(
+                f"Date exclusion type '{before_after}' for variable '{exclusion_var}' invalid"
+            )
         exclusions = exclusions | variable_bool
     return exclusions
 
@@ -218,7 +220,7 @@ def match(
     output_suffix: str = "",
     drop_cases_from_matches: bool = False,
     output_format: str = "arrow",
-) -> None:
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Wrapper function that calls functions to:
     - import data
@@ -394,6 +396,9 @@ def match(
     write_output_file(
         combined, output_path / f"matched_combined{output_suffix}.{output_format}"
     )
+
+    # return the matched dataframes, for ease of testing
+    return matched_cases, matched_matches
 
 
 def compare_populations(

@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -77,6 +78,181 @@ def test_match_smoke_test(
         )
         assert output_filepath.exists()
 
+    # rerun and check that our report text is the same length (not identical, because
+    # timestamps are different, but it has overwritten the file rather than appending on
+    # a new run)
+    match(
+        case_df=load_dataframe(FIXTURE_PATH / input_cases_file),
+        match_df=load_dataframe(FIXTURE_PATH / input_control_file),
+        **test_matching,
+    )
+    report_text1 = report_path.read_text()
+    assert report_text1 != report_text
+    assert len(report_text.split("\n")) == len(report_text1.split("\n"))
+
+
+@pytest.mark.parametrize(
+    "min_per_case,match_count",
+    [
+        (10, 3),
+        (5, 4),
+    ],
+)
+def test_match_min_matches_per_case(tmp_path, min_per_case, match_count):
+    """Test that match() runs and produces a matching report and outputs."""
+    test_matching = {
+        "matches_per_case": 10,
+        "min_matches_per_case": min_per_case,
+        "match_variables": {
+            "sex": "category",
+            "age": 5,
+        },
+        "index_date_variable": "indexdate",
+        "date_exclusion_variables": {
+            "died_date_ons": "before",
+            "previous_event": "before",
+        },
+        "output_suffix": "_test",
+        "output_path": tmp_path / "test_output",
+    }
+    matched_cases, matched_matches = match(
+        case_df=load_dataframe(FIXTURE_PATH / "input_cases.csv"),
+        match_df=load_dataframe(FIXTURE_PATH / "input_controls.csv"),
+        **test_matching,
+    )
+
+    # set_id is the id of the case that this match matched
+    unique_matched_cases = matched_matches.set_id.unique()
+    assert len(unique_matched_cases) == match_count
+    for set_id in unique_matched_cases:
+        assert len(matched_matches[matched_matches.set_id == set_id]) >= min_per_case
+
+
+def test_match_min_matches_per_case_cannot_be_less_than_matches_per_case(tmp_path):
+    """Test that match() runs and produces a matching report and outputs."""
+    test_matching = {
+        "matches_per_case": 1,
+        "min_matches_per_case": 2,
+        "match_variables": {
+            "sex": "category",
+        },
+        "index_date_variable": "indexdate",
+        "output_path": tmp_path,
+    }
+    with pytest.raises(
+        ValueError, match="min_matches_per_case cannot be greater than matches_per_case"
+    ):
+        match(
+            case_df=load_dataframe(FIXTURE_PATH / "input_cases.csv"),
+            match_df=load_dataframe(FIXTURE_PATH / "input_controls.csv"),
+            **test_matching,
+        )
+
+
+@pytest.mark.parametrize("drop_cases_from_matches", [True, False])
+def test_match_drop_cases(tmp_path, drop_cases_from_matches):
+    test_matching = {
+        "matches_per_case": 1,
+        "match_variables": {
+            "sex": "category",
+            "age": 1,
+            "region": "category",
+            "indexdate": "month_only",
+        },
+        "closest_match_variables": ["age"],
+        "index_date_variable": "indexdate",
+        "date_exclusion_variables": {
+            "died_date_ons": "before",
+            "previous_event": "before",
+        },
+        "output_suffix": "_test",
+        "output_path": tmp_path / "test_output",
+        "drop_cases_from_matches": drop_cases_from_matches,
+    }
+
+    case_df = load_dataframe(FIXTURE_PATH / "input_cases.csv")
+    match_df = load_dataframe(FIXTURE_PATH / "input_controls.csv")
+    match(
+        case_df,
+        match_df,
+        **test_matching,
+    )
+    report_path = test_matching["output_path"] / "matching_report_test.txt"
+    report_text = report_path.read_text().split("\n")
+    # Find the drop section of the report
+    drop_section = report_text.index("Dropping cases from matches:")
+    # Title line is followed by timestamp and number of cases, so we want the 3rd line
+    matches_after_drop = int(report_text[drop_section + 3].split("Matches")[1].strip())
+    if drop_cases_from_matches:
+        assert len(match_df) > matches_after_drop
+    else:
+        assert len(match_df) == matches_after_drop
+
+
+@pytest.mark.parametrize(
+    "offset,expected_indexdate",
+    [
+        # These input files and config produce one match, for a case with indexdate 2020-07-29
+        ("no_offset", datetime(2020, 7, 29)),
+        ("1_day_earlier", datetime(2020, 7, 28)),
+        ("3_months_later", datetime(2020, 10, 29)),
+        ("2_years_earlier", datetime(2018, 7, 29)),
+    ],
+)
+def test_replace_match_index_date_with_case(tmp_path, offset, expected_indexdate):
+    test_matching = {
+        "matches_per_case": 1,
+        "match_variables": {
+            "sex": "category",
+            "age": 1,
+            "region": "category",
+            "indexdate": "month_only",
+        },
+        "closest_match_variables": ["age"],
+        "index_date_variable": "indexdate",
+        "output_path": tmp_path,
+        "drop_cases_from_matches": True,
+        "replace_match_index_date_with_case": offset,
+    }
+
+    case_df = load_dataframe(FIXTURE_PATH / "input_cases.csv")
+    match_df = load_dataframe(FIXTURE_PATH / "input_controls.csv")
+    _, matched_matches = match(
+        case_df,
+        match_df,
+        **test_matching,
+    )
+
+    assert matched_matches.iloc[0].indexdate == expected_indexdate
+
+
+def test_replace_match_index_date_offset_error(tmp_path):
+    test_matching = {
+        "matches_per_case": 1,
+        "match_variables": {
+            "sex": "category",
+            "age": 1,
+            "region": "category",
+            "indexdate": "month_only",
+        },
+        "closest_match_variables": ["age"],
+        "index_date_variable": "indexdate",
+        "drop_cases_from_matches": True,
+        "replace_match_index_date_with_case": "1_day_before",
+        "output_path": tmp_path,
+    }
+
+    case_df = load_dataframe(FIXTURE_PATH / "input_cases.csv")
+    match_df = load_dataframe(FIXTURE_PATH / "input_controls.csv")
+    with pytest.raises(
+        Exception, match="Date offset type '1_day_before' not recognised"
+    ):
+        match(
+            case_df,
+            match_df,
+            **test_matching,
+        )
+
 
 def test_categorical_get_bool_index():
     """
@@ -108,6 +284,17 @@ def test_scalar_get_bool_index():
     bool_index = get_bool_index(match_type, value, match_var, matches)
 
     assert bool_index.equals(pd.Series([False, True, True, False, False]))
+
+
+def test_get_bool_index_unknown_match_tupe():
+    match_type = "foo"
+    value = 36
+    match_var = "value"
+    matches = pd.DataFrame.from_records(
+        [[30], [36], [39], [61], [75]], columns=["value"]
+    )
+    with pytest.raises(Exception, match="Matching type 'foo' not yet implemented"):
+        get_bool_index(match_type, value, match_var, matches)
 
 
 def test_pre_calculate_indices():
@@ -168,19 +355,43 @@ def test_date_exclusions():
     """
     df1 = pd.DataFrame.from_records(
         [
-            {"died_date": "2019-03-12", "previous_outcome": ""},
-            {"died_date": "2020-02-01", "previous_outcome": ""},
-            {"died_date": "2020-04-27", "previous_outcome": ""},
-            {"died_date": "2020-04-27", "previous_outcome": "2019-06-11"},
-            {"died_date": "2020-04-27", "previous_outcome": "2020-04-01"},
-            {"died_date": "2019-03-12", "previous_outcome": "2019-06-30"},
+            # excluded on died date
+            {"died_date": "2019-03-12", "previous_outcome": "", "later_outcome": ""},
+            # excluded on later outcome
+            {
+                "died_date": "2020-02-01",
+                "previous_outcome": "",
+                "later_outcome": "2024-02-01",
+            },
+            # not excluded
+            {"died_date": "2020-04-27", "previous_outcome": "", "later_outcome": ""},
+            # excluded on previous outcome
+            {
+                "died_date": "2020-04-27",
+                "previous_outcome": "2019-06-11",
+                "later_outcome": "",
+            },
+            # not excluded
+            {
+                "died_date": "2020-04-27",
+                "previous_outcome": "2020-04-01",
+                "later_outcome": "",
+            },
+            # excluded on all
+            {
+                "died_date": "2019-03-12",
+                "previous_outcome": "2019-06-30",
+                "later_outcome": "2024-02-01",
+            },
         ]
     )
     df1["died_date"] = pd.to_datetime(df1["died_date"])
     df1["previous_outcome"] = pd.to_datetime(df1["previous_outcome"])
+    df1["later_outcome"] = pd.to_datetime(df1["later_outcome"])
     date_exclusion_variables = {
         "died_date": "before",
         "previous_outcome": "before",
+        "later_outcome": "after",
     }
     index_date = "2020-02-01"
     index_date_series = pd.to_datetime(
@@ -199,8 +410,27 @@ def test_date_exclusions():
     excl = date_exclusions(df1, date_exclusion_variables, index_date)
     excl_ser = date_exclusions(df1, date_exclusion_variables, index_date_series)
 
-    assert excl.equals(pd.Series([True, False, False, True, False, True]))
-    assert excl_ser.equals(pd.Series([True, False, False, True, False, True]))
+    assert excl.equals(pd.Series([True, True, False, True, False, True]))
+    assert excl_ser.equals(pd.Series([True, True, False, True, False, True]))
+
+
+def test_date_exclusions_invalid_type():
+    df1 = pd.DataFrame.from_records(
+        [
+            {"died_date": "2019-03-12"},
+        ]
+    )
+    df1["died_date"] = pd.to_datetime(df1["died_date"])
+    date_exclusion_variables = {
+        "died_date": "on_or_before",
+    }
+    index_date = "2020-02-01"
+
+    with pytest.raises(
+        Exception,
+        match="Date exclusion type 'on_or_before' for variable 'died_date' invalid",
+    ):
+        date_exclusions(df1, date_exclusion_variables, index_date)
 
 
 def test_greedily_pick_matches():
@@ -246,3 +476,8 @@ def test_get_date_offset():
     assert one_year_before == pd.DateOffset(years=1)
     assert two_months_before == pd.DateOffset(months=2)
     assert three_days_before == pd.DateOffset(days=3)
+
+
+def test_get_date_offset_invalid():
+    with pytest.raises(Exception, match="Date offset 'quarter' not implemented"):
+        get_date_offset("1_quarter_before")
