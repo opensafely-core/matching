@@ -1,10 +1,121 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7691460.svg)](https://doi.org/10.5281/zenodo.7691460)
 
-# Simple categorical and scalar variable matching
+> [!NOTE] 
+> The [`opensafely-matching` python package](https://pypi.org/project/opensafely-matching/) has been deprecated. If you are using this package
+> in an OpenSAFELY study, we recommend that you use the [matching reusable action](https://actions.opensafely.org/matching),
+> as documented below.
+>
+> If you are using the python package, you can find the documentation for previous releases by
+> switching to the relevant tag in this repo. For example, [v1.0.0](https://github.com/opensafely-actions/matching/tree/v1.0.0).
 
-This tool matches patients in one dataset file to a specified number of matches in another dataset file. It does this according to a specified list of categorical and/or scalar variables.
 
-Dataset files can be in `.csv`, `.csv.gz` or `.arrow` format.
+# Matching: Simple categorical and scalar variable matching
+
+This action matches patients in one dataset file to a specified number of matches in another dataset file. It does this according to a specified list of categorical and/or scalar variables.
+
+Input dataset files can be in `.csv`, `.csv.gz` or `.arrow` format.
+
+
+## Usage
+
+In summary:
+- Use ehrql to extract your case and controls [input datasets](#input-datanput)
+- Use `matching` to find matches and [output matched datasets and a report](#outputs)
+
+Let's walk through an example `project.yaml`.
+
+The following ehrql actions extract a dataset of cases/exposed patients and a dataset of potential controls:
+```yaml
+generate_cases:
+  run: >
+    ehrql:v1 generate-dataset analysis/dataset_definition_cases.py --output output/cases.arrow
+  outputs:
+    highly_sensitive:
+      dataset: output/cases.arrow
+
+generate_controls:
+  run: >
+    ehrql:v1 generate-dataset analysis/dataset_definition_controls.py --output output/controls.arrow
+  outputs:
+    highly_sensitive:
+      dataset: output/controls.arrow
+```
+
+Then, the following action uses the `matching`reusable action to perform the matching and generate output files. Remember to replace [version] with a version of the `match` reusable action (e.g. v1.1.0):
+
+```yaml
+match:
+  run: >
+    matching:[version]
+    --cases output/cases.arrow
+    --controls output/controls.arrow
+    --config '{
+      "matches_per_case": 3,
+      "match_variables": {
+        "sex": "category",
+        "age": 5,
+        "indexdate": "month_only"
+      },
+      "index_date_variable": "indexdate",
+      "closest_match_variables": ["age"]
+    }'
+  needs: [generate_cases, generate_controls]
+  outputs:
+    highly_sensitive:
+      matched_cases: output/matched_cases.arrow
+      matched_controls: output/matched_matches.arrow
+      matched_combined: output/matched_combined.arrow
+    moderately_sensitive:
+      report: output/matching_report.txt
+```
+
+This matches 3 matches per case, on the variables `sex`, and `age` (±5 years) and produces output files in the default `.arrow` format.
+
+Note: the `config` parameter is a json string in the above example, but can also be a path to a json file.
+When the action runs, it only has access to files that are the outputs of previous actions. We can use a json
+file by writing it in a preceding action, e.g.
+
+```yaml
+write_config:
+  run: python:v2 analysis/write_matching_config.py
+  needs: [generate_cases, generate_controls]
+  outputs:
+    moderately_sensitive:
+      config: output/config.json
+
+match:
+  run: >
+    matching:[version]
+    --cases output/cases.arrow
+    --controls output/controls.arrow
+    --config output/config.json
+  needs: [write_config, generate_cases, generate_controls]
+  outputs:
+    ...
+```
+
+`analysis/write_matching_config.py` might look something like:
+```py
+from pathlib import Path
+import json
+
+config = {
+    "matches_per_case": 3,
+    "match_variables": {
+        "sex": "category",
+        "age": 5,
+        "indexdate": "month_only"
+    },
+    "index_date_variable": "indexdate",
+    "closest_match_variables": ["age"],
+}
+
+Path("output/config.json").write_text(json.dumps(config, indent=2))
+```
+
+## Input data
+This is expected to be in two dataset files in one of the supported formats (`.csv`, `.csv.gz` or `.arrow`) - one for the case/exposed group and one for the population to be matched. These data must have all the variables that are specified in arguments when running, and can have any number of other variables (all of which are returned in the [output](#outputs) files).
+
 
 ## Methodological notes
 This is a work in progress and is implemented for one or two specific study designs, but is intended to be generalisable to other projects, with new features implemented as needed.
@@ -15,95 +126,7 @@ This is a work in progress and is implemented for one or two specific study desi
 - Cases that do not get the specified number of matches (as specified by `matches_per_case`) are retained by default. This can be changed using the `min_matches_per_case` option.
 - Matches are picked at random, but with a set seed, meaning that running twice on the same dataset should yield the same results.
 
-## System requirements
-
-Requires Python 3.8+
-
-Install with:
-
-```
-pip install opensafely-matching
-```
-
-## Input data
-This is expected to be in two dataset files in one of the supported formats (`.csv`, `.csv.gz` or `.arrow`) - one for the case/exposed group and one for the population to be matched. These data must have all the variables that are specified in arguments when running, and can have any number of other variables (all of which are returned in the [output](#outputs) files).
-
-## Use
-
-### In a python script
-
-Matching is run by calling the match function with at least the required arguments, as per:
-```py
-from osmatching import match
-from osmatching.utils import load_dataframe
-
-match(
-    case_df=load_dataframe("input_cases.arrow"),
-    match_df=load_dataframe("input_matches.arrow"),
-    matches_per_case=3,
-    match_variables={
-        "sex": "category",
-        "age": 5,
-    },
-    index_date_variable="indexdate",
-)
-```
-
-This matches 3 matches per case, on the variables `sex`, and `age` (±5 years) and produces output files in the default `.arrow` format.\
-**Outputs:**\
-`output/matched_cases.arrow`\
-`output/matched_matches.arrow`\
-`output/matched_combined.arrow`\
-`output/matching_report.txt`
-
-### From the command line
-
-```sh
-usage: match [-h] --config CONFIG [--version] [--cases CASES] [--controls CONTROLS] [--output-format {arrow,csv.gz,csv}]
-
-Matches cases to controls if provided with 2 datasets
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --config CONFIG       The configuration for the matching action
-  --version             show program version number and exit
-  --cases CASES         Data file that contains the cases
-  --controls CONTROLS   Data file that contains the cohort for cases
-  --output-format {arrow,csv.gz,csv}
-                        Format for the output files
-```
-
-To run the above example from the command line:
-```sh
-match --cases input_cases.arrow --controls input_matches.arrow --config config.json
-```
-where `config.json` is a file containing additional arguments to `match()`:
-```
-{
-  "matches_per_case": 3,
-  "match_variables": {
-    "sex": "category",
-    "age": 5
-  },
-  "index_date_variable": "indexdate"
-}
-```
-
-Alternatively, pass config on the command line as a json string:
-```
-match \
-  --cases input_cases.arrow \
-  --controls input_matches.arrow \
-  --config '{"matches_per_case": 3, "match_variables": {"sex": "category", "age": 5}, "index_date_variable": "indexdate"}'
-```
-
-### Required arguments
-
-`case_df`\
-A dataframe containing case/exposed population.
-
-`match_df`\
-A dataframe containing the population of patients to match onto the case/exposed population.
+### Required configuration
 
 `matches_per_case`\
 The integer number of matches to match to each case/exposed patient, where possible.
@@ -119,7 +142,7 @@ A Python dictionary containing a list of variables to match on as keys, while th
 A string variable (format: "YYYY-MM-DD") relating to the index date for each case.
 
 
-### Optional arguments
+### Optional configuration
 
 `closest_match_variables`(default: `[]`)\
 A Python list (e.g `["age", "months_since_diagnosis"]`) containing variables that you want to find the closest match on. The order given in the list determines the priority of sorting (first is highest priority).
@@ -163,7 +186,7 @@ If `True`, all `patient_id`s in the case CSV are dropped from the match CSV befo
 ### Format
 Files can be output as `csv`, `csv.gz` or `arrow` files. The default is `arrow`.
 
-### Datasets
+### Output datasets
 All the below data outputs contain all of the columns that were in the input datasets, plus:
 
 - `set_id` - a variable identifying the groups of matched cases and matches. It is the same as the patient ID of the case.
@@ -238,40 +261,40 @@ Match COVID population to pneumonia population with:
  - matching on sex, age, stp (an NHS administrative region), and the month of the index date.
  - greedy matching on age 
  - excluding patients who died or had various outcomes before their index date
-```py
-from osmatching import load_config, load_dataframe, match
 
-match(
-    case_df=load_dataframe("input_covid.csv.gz"),
-    match_df=load_dataframe("input_pneumonia.csv.gz"),
-    load_config(
-        dict(
-            matches_per_case=1,
-            match_variables={
-                "sex": "category",
-                "age": 1,
-                "stp": "category",
-                "indexdate": "month_only",
-            },
-            index_date_variable="indexdate",
-            closest_match_variables=["age"],
-            date_exclusion_variables={
-                "died_date_ons": "before",
-                "previous_vte_gp": "before",
-                "previous_vte_hospital": "before",
-                "previous_stroke_gp": "before",
-                "previous_stroke_hospital": "before",
-            },
-            output_suffix="_pneumonia",
-        )
-    )
-)
+```yaml
+match:
+  run: >
+    matching:[version]
+    --cases output/input_covid.csv.gz
+    --controls output/input_pneumonia.csv.gz
+    --config '{
+      "matches_per_case": 1,
+      "match_variables": {
+        "sex": "category",
+        "age": 1,
+        "stp": "category",
+        "indexdate": "month_only"
+      },
+      "index_date_variable": "indexdate",
+      "closest_match_variables": ["age"],
+      "date_exclusion_variables": {
+        "died_date_ons": "before",
+        "previous_vte_gp": "before",
+        "previous_vte_hospital": "before",
+        "previous_stroke_gp": "before",
+        "previous_stroke_hospital": "before",
+      },
+      "output_suffix": "_pneumonia"
+    }'
+  outputs:
+    highly_sensitive:
+      matched_cases: output/matched_cases_pneumonia.arrow
+      matched_controls: output/matched_matches_pneumonia.arrow
+      matched_combined: output/matched_combined_pneumonia.arrow
+    moderately_sensitive:
+      report: output/matching_report_pneumonia.txt
 ```
-**Outputs:**\
-`output/matched_cases_pneumonia.arrow`\
-`output/matched_matches_pneumonia.arrow`\
-`output/matched_combined_pneumonia.arrow`\
-`output/matching_report_pneumonia.txt`
 
 ---
 
@@ -281,41 +304,41 @@ Match COVID population to general population from 2019 with:
  - greedy matching on age 
  - excluding patients who died or had various outcomes before their index date
  - case/match groups where there isn't at least one match are excluded
-```py
-from osmatching import load_config, load_dataframe, match
 
-match(
-    case_df=load_dataframe("input_covid.csv.gz"),
-    match_df=load_dataframe("input_control_2019.csv.gz"),
-    match_config=load_config(
-        dict(
-            matches_per_case=2,
-            match_variables={
-                "sex": "category",
-                "age": 1,
-                "stp": "category",
-            },
-            index_date_variable="indexdate",
-            closest_match_variables=["age"],
-            min_matches_per_case=1,
-            generate_match_index_date="1_year_earlier",
-            date_exclusion_variables={
-                "died_date_ons": "before",
-                "previous_vte_gp": "before",
-                "previous_vte_hospital": "before",
-                "previous_stroke_gp": "before",
-                "previous_stroke_hospital": "before",
-            },
-            output_suffix="_control_2019",
-        )
-    )
-)
+```yaml
+match:
+  run: >
+    matching:[version]
+    --cases output/input_covid.csv.gz
+    --controls output/input_control_2019.csv.gz
+    --config '{
+      "matches_per_case": 2,
+      "match_variables": {
+        "sex": "category",
+        "age": 1,
+        "stp": "category",
+      },
+      "index_date_variable": "indexdate",
+      "closest_match_variables": ["age"],
+      "min_matches_per_case": 1,
+      "generate_match_index_date: "1_year_earlier",
+      "date_exclusion_variables": {
+        "died_date_ons": "before",
+        "previous_vte_gp": "before",
+        "previous_vte_hospital": "before",
+        "previous_stroke_gp": "before",
+        "previous_stroke_hospital": "before",
+      },
+      "output_suffix": "_control_2019"
+    }'
+  outputs:
+    highly_sensitive:
+      matched_cases: output/matched_cases_control_2019.arrow
+      matched_controls: output/matched_matches_control_2019.arrow
+      matched_combined: output/matched_combined_control_2019.arrow
+    moderately_sensitive:
+      report: output/matching_report_control_2019.txt
 ```
-**Outputs:**\
-`output/matched_cases_control_2019.arrow`\
-`output/matched_matches_control_2019.arrow`\
-`output/matched_combined_control_2019.arrow`\
-`output/matching_report_control_2019.txt`
 
 ---
 
@@ -324,37 +347,38 @@ Match COVID population to general population from 2020 with:
  - matching on sex, age, stp (an NHS administrative region).
  - greedy matching on age 
  - excluding patients who died or had various outcomes before their index date
-```py
-from osmatching import load_config, load_dataframe, match
 
-match(
-    case_df=load_dataframe("input_covid.csv.gz"),
-    match_df=load_dataframe("input_control_2020.csv.gz"),
-    match_config=load_config(
-        dict(
-            matches_per_case=2,
-            match_variables={
-                "sex": "category",
-                "age": 1,
-                "stp": "category",
-            },
-            closest_match_variables=["age"],
-            generate_match_index_date="no_offset",
-            index_date_variable="indexdate",
-            date_exclusion_variables={
-                "died_date_ons": "before",
-                "previous_vte_gp": "before",
-                "previous_vte_hospital": "before",
-                "previous_stroke_gp": "before",
-                "previous_stroke_hospital": "before",
-            },
-            output_suffix="_control_2020",
-        )
-    )
-)
+```yaml
+match:
+  run: >
+    matching:[version]
+    --cases output/input_covid.csv.gz
+    --controls output/input_control_2020.csv.gz
+    --config '{
+      "matches_per_case": 2,
+      "match_variables": {
+        "sex": "category",
+        "age": 1,
+        "stp": "category",
+      },
+      "index_date_variable": "indexdate",
+      "closest_match_variables": ["age"],
+      "min_matches_per_case": 1,
+      "generate_match_index_date": "no_offset",
+      "date_exclusion_variables": {
+        "died_date_ons": "before",
+        "previous_vte_gp": "before",
+        "previous_vte_hospital": "before",
+        "previous_stroke_gp": "before",
+        "previous_stroke_hospital": "before",
+      },
+      "output_suffix": "_control_2019"
+    }'
+  outputs:
+    highly_sensitive:
+      matched_cases: output/matched_cases_control_2020.arrow
+      matched_controls: output/matched_matches_control_2020.arrow
+      matched_combined: output/matched_combined_control_2020.arrow
+    moderately_sensitive:
+      report: output/matching_report_control_2020.txt
 ```
-**Outputs:**\
-`output/matched_cases_control_2020.arrow`\
-`output/matched_matches_control_2020.arrow`\
-`output/matched_combined_control_2020.arrow`\
-`output/matching_report_control_2020.txt`
