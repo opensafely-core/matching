@@ -1,0 +1,1 @@
+run: python:v2 python -m osmatching.__main__
