@@ -1,0 +1,31 @@
+---
+name: Tag new version
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+concurrency: tag-new-version-group
+
+jobs:
+  ci:
+    uses: ./.github/workflows/main.yml
+
+  tag-new-version:
+    needs: [ci]
+    runs-on: ubuntu-latest
+
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag new version
+        uses: mathieudutour/github-tag-action@d745f2e74aaf1ee82e747b181f7a0967978abee0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          create_annotated_tag: true
