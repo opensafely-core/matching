@@ -1,0 +1,50 @@
+---
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    name: Run checks
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: opensafely-core/setup-action@v1
+        with:
+          install-just: true
+          python-version: "3.10"
+      - name: Set up development environment
+        run: just devenv
+      - name: Check formatting and linting rules
+        run: just check
+
+  test:
+    runs-on: ubuntu-latest
+    name: Run test suite
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: opensafely-core/setup-action@v1
+        with:
+          install-just: true
+          python-version: "3.10"
+      - name: Set up development environment
+        run: just devenv
+      - name: Run tests
+        run: just test
+
+  test-integration:
+    needs: [test]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: opensafely-core/research-action@v2
