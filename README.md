@@ -14,6 +14,16 @@ This is a work in progress and is implemented for one or two specific study desi
 - Matches are picked at random, but with a set seed, meaning that running twice on the same dataset should yield the same results.
 - This was originally implemented by passing a dictionary of options to the function - this is still possible - see [here](#passing-a-dict-of-options-instead).
 
+## System requirements
+
+Requires Python 3.8+
+
+Install with:
+
+```
+pip install opensafely-matching
+```
+
 ## Input data
 This is expected to be in two CSVs - one `case_csv` for the case/exposed group and one `match_csv` for the population to be matched. These data must have all the variables that are specified in arguments when running, and can have any number of other variables (all of which are returned in the [output](#outputs) CSVs).
 
