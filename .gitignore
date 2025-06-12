@@ -7,3 +7,5 @@ __pycache__
 .coverage
 opensafely_matching.egg-info/
 test_output/
+output/
+metadata/
