@@ -4,7 +4,6 @@ import argparse
 import json
 from importlib.metadata import version
 from pathlib import Path
-from typing import Dict
 
 from osmatching.osmatching import match
 from osmatching.utils import file_suffix, load_config, load_dataframe
@@ -37,7 +36,7 @@ class LoadDataframe(argparse.Action):
         setattr(namespace, self.dest, load_dataframe(data_filepath))
 
 
-def load_matching_config(cases: str, controls: str, config: Dict, output_format: str):
+def load_matching_config(cases: str, controls: str, config: dict, output_format: str):
     processed_match_config = load_config(config)
 
     match(

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import pandas as pd
 
@@ -17,14 +17,14 @@ DEFAULTS = {
 }
 
 
-DATAFRAME_READER: Dict[str, Tuple] = {
+DATAFRAME_READER: dict[str, tuple] = {
     ".csv": ("read_csv", {"engine": "pyarrow"}),
     ".arrow": ("read_feather", {}),
 }
-DATAFRAME_WRITER: Dict[str, str] = {".csv": "to_csv", ".arrow": "to_feather"}
+DATAFRAME_WRITER: dict[str, str] = {".csv": "to_csv", ".arrow": "to_feather"}
 
 
-def load_config(match_config: Dict) -> Dict[str, Any]:
+def load_config(match_config: dict) -> dict[str, Any]:
     """
     Takes in match configuration and changes these key-value pairs
     where indicated by the match config. All other key-value pairs
@@ -35,7 +35,7 @@ def load_config(match_config: Dict) -> Dict[str, Any]:
             taken from json
 
     Returns:
-        Dict (cfg): Configuration dictionary to be passed to entry point.
+        dict (cfg): Configuration dictionary to be passed to entry point.
     """
     cfg = DEFAULTS.copy()
     cfg.update(match_config)
