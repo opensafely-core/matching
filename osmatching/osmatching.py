@@ -3,7 +3,7 @@
 import copy
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import pandas as pd
 
@@ -16,10 +16,10 @@ NOT_PREVIOUSLY_MATCHED = -9
 def import_data(
     cases: pd.DataFrame,
     matches: pd.DataFrame,
-    match_variables: Dict,
-    date_exclusion_variables: Optional[Dict[Any, Any]],
+    match_variables: dict,
+    date_exclusion_variables: Optional[dict[Any, Any]],
     index_date_variable: str,
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Sets the correct data types for the matching variables.
     """
@@ -62,7 +62,7 @@ def import_data(
 
 def add_variables(
     cases: pd.DataFrame, matches: pd.DataFrame, indicator_variable_name: str = "case"
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Adds the following variables to the case and match tables:
     set_id - in the final table, this will be identify groups of matched cases
@@ -97,14 +97,14 @@ def get_bool_index(
 
 
 def pre_calculate_indices(
-    cases: pd.DataFrame, matches: pd.DataFrame, match_variables: Dict
-) -> Dict[str, str]:
+    cases: pd.DataFrame, matches: pd.DataFrame, match_variables: dict
+) -> dict[str, str]:
     """
     Loops over each of the values in the case table for each of the match
     variables and generates a boolean Series against the match table. These are
     returned in a dict.
     """
-    indices_dict: Dict = {}
+    indices_dict: dict = {}
     for match_var in match_variables:
         match_type = match_variables[match_var]
         indices_dict[match_var] = {}
@@ -119,7 +119,7 @@ def pre_calculate_indices(
 def get_eligible_matches(
     case_row: pd.DataFrame,
     matches: pd.DataFrame,
-    match_variables: Dict,
+    match_variables: dict,
     indices: pd.DataFrame,
 ) -> pd.DataFrame:
     """
@@ -137,7 +137,7 @@ def get_eligible_matches(
     return eligible_matches
 
 
-def date_exclusions(df1: pd.DataFrame, date_exclusion_variables: Dict, index_date: str):
+def date_exclusions(df1: pd.DataFrame, date_exclusion_variables: dict, index_date: str):
     """
     Loops over the exclusion variables and creates a boolean Series corresponding
     to where there are exclusion variables that occur before the index date.
@@ -162,7 +162,7 @@ def greedily_pick_matches(
     matches_per_case: int,
     matched_rows: pd.DataFrame,
     case_row: pd.DataFrame,
-    closest_match_variables: Union[None, List] = None,
+    closest_match_variables: Union[None, list] = None,
 ) -> pd.Index:
     """
     Cuts the eligible_matches list to the number of matches specified. This is a
@@ -172,7 +172,7 @@ def greedily_pick_matches(
     matches are randomly sampled.
     """
     if closest_match_variables is not None:
-        sort_cols: List = []
+        sort_cols: list = []
         for var in closest_match_variables:
             matched_rows[f"{var}_delta"] = abs(matched_rows[var] - case_row[var])
             sort_cols.append(f"{var}_delta")
@@ -209,10 +209,10 @@ def match(
     case_df: str,
     match_df: str,
     matches_per_case: int,
-    match_variables: Dict,
+    match_variables: dict,
     index_date_variable: str,
-    closest_match_variables: Optional[List[Any]] = None,
-    date_exclusion_variables: Optional[Dict[Any, Any]] = None,
+    closest_match_variables: Optional[list[Any]] = None,
+    date_exclusion_variables: Optional[dict[Any, Any]] = None,
     min_matches_per_case: int = 0,
     replace_match_index_date_with_case: Optional[str] = None,
     indicator_variable_name: str = "case",
@@ -220,7 +220,7 @@ def match(
     output_suffix: str = "",
     drop_cases_from_matches: bool = False,
     output_format: str = "arrow",
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Wrapper function that calls functions to:
     - import data
@@ -242,7 +242,7 @@ def match(
 
     report_path = output_path / f"matching_report{output_suffix}.txt"
 
-    def matching_report(text_list: List, erase: bool = False) -> None:
+    def matching_report(text_list: list, erase: bool = False) -> None:
         if erase and report_path.is_file():
             report_path.unlink()
 
@@ -404,7 +404,7 @@ def match(
 def compare_populations(
     matched_cases: pd.DataFrame,
     matched_matches: pd.DataFrame,
-    closest_match_variables: Optional[List[Any]],
+    closest_match_variables: Optional[list[Any]],
 ) -> pd.DataFrame:
     """
     Takes the list of closest_match_variables and describes each of them for the matched
