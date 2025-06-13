@@ -1,13 +1,8 @@
 name: Tag repo; build and publish assets
 on:
-  workflow_run:
-    workflows:
-      - Tests
-    branches:
-      - main
-    types:
-      - completed
   # this allows us to trigger manually
+  # Note: we are not automatically publishing to pypi anymore. This workflow is retained
+  # for now so that we can manually publish if we desired to do so.
   workflow_dispatch:
 
 
