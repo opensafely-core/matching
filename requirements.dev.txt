@@ -23,7 +23,9 @@ mypy==1.14.1
 mypy-extensions==1.1.0
     # via mypy
 numpy==1.24.4
-    # via pandas
+    # via
+    #   pandas
+    #   pyarrow
 packaging==25.0
     # via
     #   build
@@ -34,6 +36,8 @@ pip-tools==7.4.1
     # via -r requirements.dev.in
 pluggy==1.5.0
     # via pytest
+pyarrow==17.0.0
+    # via opensafely-matching
 pyproject-hooks==1.2.0
     # via
     #   build

@@ -1,47 +1,44 @@
 """Main program that does matching"""
 
 import copy
-import os
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
+
+from osmatching.utils import write_output_file
 
 
 NOT_PREVIOUSLY_MATCHED = -9
 
 
-def import_csvs(
-    case_csv: str,
-    match_csv: str,
+def import_data(
+    cases: pd.DataFrame,
+    matches: pd.DataFrame,
     match_variables: Dict,
     date_exclusion_variables: Optional[Dict[Any, Any]],
     index_date_variable: str,
-    input_path: str = "tests/test_data",
-    replace_match_index_date_with_case: Optional[str] = None,
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Imports the two csvs specified under case_csv and match_csv.
-    Also sets the correct data types for the matching variables.
+    Sets the correct data types for the matching variables.
     """
-    cases = pd.read_csv(
-        os.path.join(input_path, f"{case_csv}"),
-        index_col="patient_id",
-    )
-    matches = pd.read_csv(
-        os.path.join(input_path, f"{match_csv}"),
-        index_col="patient_id",
-    )
 
     ## Set data types for matching variables
     month_only = []
     for var, match_type in match_variables.items():
         if match_type == "category":
+            # arrow files already have category types, so we don't need to convert them
+            if cases[var].dtype.name == "category":
+                continue
             cases[var] = cases[var].astype("category")
             matches[var] = matches[var].astype("category")
         ## Extract month from month_only variables
         elif match_type == "month_only":
             month_only.append(var)
+            # Ensure our datetimes are strings before slicing
+            cases[var] = cases[var].astype("str")
+            matches[var] = matches[var].astype("str")
             cases[f"{var}_m"] = cases[var].str.slice(start=5, stop=7).astype("category")
             matches[f"{var}_m"] = (
                 matches[var].str.slice(start=5, stop=7).astype("category")
@@ -58,8 +55,7 @@ def import_csvs(
 
     ## Format index date as date
     cases[index_date_variable] = pd.to_datetime(cases[index_date_variable])
-    if replace_match_index_date_with_case is None:
-        matches[index_date_variable] = pd.to_datetime(matches[index_date_variable])
+    matches[index_date_variable] = pd.to_datetime(matches[index_date_variable])
 
     return cases, matches
 
@@ -155,7 +151,9 @@ def date_exclusions(df1: pd.DataFrame, date_exclusion_variables: Dict, index_dat
         elif before_after == "after":
             variable_bool = df1[exclusion_var] > index_date
         else:
-            raise Exception(f"Date exclusion type '{exclusion_var}' invalid")
+            raise Exception(
+                f"Date exclusion type '{before_after}' for variable '{exclusion_var}' invalid"
+            )
         exclusions = exclusions | variable_bool
     return exclusions
 
@@ -208,8 +206,8 @@ def get_date_offset(offset_str: str) -> Optional[pd.DataFrame]:
 
 
 def match(
-    case_csv: str,
-    match_csv: str,
+    case_df: str,
+    match_df: str,
     matches_per_case: int,
     match_variables: Dict,
     index_date_variable: str,
@@ -218,11 +216,11 @@ def match(
     min_matches_per_case: int = 0,
     replace_match_index_date_with_case: Optional[str] = None,
     indicator_variable_name: str = "case",
+    output_path: Union[Path, str] = Path("output"),
     output_suffix: str = "",
-    output_path: str = "tests/test_output",
-    input_path: str = "tests/test_data",
     drop_cases_from_matches: bool = False,
-) -> None:
+    output_format: str = "arrow",
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Wrapper function that calls functions to:
     - import data
@@ -233,27 +231,26 @@ def match(
         during matching for studies where the match index date comes from the case)
     - set the set_id as that of the case_id (this excludes them from being matched later)
     - set the index date of the match as that of the case (where desired)
-    - save the results as a csv
+    - save the results in the specified output format
     """
     if min_matches_per_case > matches_per_case:
         raise ValueError("min_matches_per_case cannot be greater than matches_per_case")
 
-    report_path = os.path.join(
-        output_path,
-        f"matching_report{output_suffix}.txt",
-    )
+    # Make sure the output path is a Path and it exists
+    output_path = Path(output_path)
+    output_path.mkdir(parents=True, exist_ok=True)
 
-    def matching_report(text_to_write: List, erase: bool = False) -> None:
-        if erase and os.path.isfile(report_path):
-            os.remove(report_path)
+    report_path = output_path / f"matching_report{output_suffix}.txt"
 
-        os.makedirs(output_path, exist_ok=True)
-        with open(report_path, "w+") as txt:
-            for line in text_to_write:
-                txt.writelines(f"{line}\n")
-                print(line)
-            txt.writelines("\n")
-            print("\n")
+    def matching_report(text_list: List, erase: bool = False) -> None:
+        if erase and report_path.is_file():
+            report_path.unlink()
+
+        text_to_write = "\n".join(text_list)
+        text_to_write += "\n\n"
+        with report_path.open("a") as report_file:
+            report_file.write(text_to_write)
+        print(text_to_write)
 
     matching_report(
         [f"Matching started at: {datetime.now()}"],
@@ -264,19 +261,17 @@ def match(
     match_variables = copy.deepcopy(match_variables)
 
     ## Import_data
-    cases, matches = import_csvs(
-        case_csv,
-        match_csv,
+    cases, matches = import_data(
+        case_df,
+        match_df,
         match_variables,
         date_exclusion_variables,
         index_date_variable,
-        input_path,
-        replace_match_index_date_with_case,
     )
 
     matching_report(
         [
-            "CSV import:",
+            "Data import:",
             f"Completed {datetime.now()}",
             f"Cases    {len(cases)}",
             f"Matches  {len(matches)}",
@@ -361,7 +356,6 @@ def match(
         ## Report number of matches for each case
         num_matches = len(matched_rows)
         cases.loc[case_id, "match_counts"] = num_matches
-
         ## Label matches with case ID if there are enough
         if num_matches >= min_matches_per_case:
             matches.loc[matched_rows, "set_id"] = case_id
@@ -391,13 +385,20 @@ def match(
         + scalar_comparisons
     )
 
-    ## Write to csvs
-    matched_cases.to_csv(os.path.join(output_path, f"matched_cases{output_suffix}.csv"))
-    matched_matches.to_csv(
-        os.path.join(output_path, f"matched_matches{output_suffix}.csv")
+    ## Write output files
+    write_output_file(
+        matched_cases, output_path / f"matched_cases{output_suffix}.{output_format}"
+    )
+    write_output_file(
+        matched_matches, output_path / f"matched_matches{output_suffix}.{output_format}"
     )
     combined = pd.concat([matched_cases, matched_matches])
-    combined.to_csv(os.path.join(output_path, f"matched_combined{output_suffix}.csv"))
+    write_output_file(
+        combined, output_path / f"matched_combined{output_suffix}.{output_format}"
+    )
+
+    # return the matched dataframes, for ease of testing
+    return matched_cases, matched_matches
 
 
 def compare_populations(

@@ -7,53 +7,42 @@ from pathlib import Path
 from typing import Dict
 
 from osmatching.osmatching import match
-from osmatching.utils import load_config
+from osmatching.utils import file_suffix, load_config, load_dataframe
 
 
-class ActionConfig:
-    def __init__(self, validator=None):
-        self.validator = validator
-
-    def __call__(self, file_or_string):
-        path = Path(file_or_string)
+class ActionConfig(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        # values can be a path to a file, or a json string
+        path = Path(values)
         try:
             if path.exists():
                 with path.open() as f:
                     config = json.load(f)
             else:
-                config = json.loads(file_or_string)
+                config = json.loads(values)
         except json.JSONDecodeError as exc:
-            raise argparse.ArgumentTypeError(f"Could not parse {file_or_string}\n{exc}")
-
-        if self.validator:
-            try:
-                self.validator(config)
-            except Exception as exc:
-                raise argparse.ArgumentTypeError(f"Invalid action config:\n{exc}")
-
-        return config
-
-    @classmethod
-    def add_to_parser(
-        cls,
-        parser,
-        helptext="The configuration for the matching action",
-        validator=None,
-    ):
-        parser.add_argument(
-            "--config",
-            required=True,
-            help=helptext,
-            type=ActionConfig(validator),
-        )
+            raise argparse.ArgumentTypeError(f"Could not parse {values}\n{exc}")
+        setattr(namespace, self.dest, config)
 
 
-def load_matching_config(cases: str, controls: str, config: Dict):
+class LoadDataframe(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        data_filepath = Path(values)
+        if not data_filepath.exists():
+            raise argparse.ArgumentTypeError(f"File {values} not found")
+        if file_suffix(data_filepath) not in [".csv", ".csv.gz", ".arrow"]:
+            raise argparse.ArgumentTypeError(
+                "Invalid file type; provide a .arrow, .csv.gz or .csv file"
+            )
+        setattr(namespace, self.dest, load_dataframe(data_filepath))
+
+
+def load_matching_config(cases: str, controls: str, config: Dict, output_format: str):
     processed_match_config = load_config(config)
 
     match(
-        case_csv=cases,
-        match_csv=controls,
+        case_df=cases,
+        match_df=controls,
         matches_per_case=processed_match_config["matches_per_case"],
         match_variables=processed_match_config["match_variables"],
         index_date_variable=processed_match_config["index_variable"],
@@ -65,9 +54,9 @@ def load_matching_config(cases: str, controls: str, config: Dict):
         ],
         indicator_variable_name=processed_match_config["indicator_variable_name"],
         output_path=processed_match_config["output_path"],
-        input_path=processed_match_config["input_path"],
         drop_cases_from_matches=processed_match_config["drop_cases_from_matches"],
         output_suffix=processed_match_config["output_suffix"],
+        output_format=processed_match_config["output_format"],
     )
 
 
@@ -81,7 +70,13 @@ def main():
     )
 
     # add configuration arg
-    ActionConfig.add_to_parser(parser)
+
+    parser.add_argument(
+        "--config",
+        required=True,
+        help="The configuration for the matching action",
+        action=ActionConfig,
+    )
 
     # version
     parser.add_argument(
@@ -91,18 +86,34 @@ def main():
     )
 
     # Cases
-    parser.add_argument("--cases", help="Data file that contains the cases")
+    parser.add_argument(
+        "--cases", action=LoadDataframe, help="Data file that contains the cases"
+    )
 
     # Controls
     parser.add_argument(
-        "--controls", help="Data file that contains the cohort for cases"
+        "--controls",
+        action=LoadDataframe,
+        help="Data file that contains the cohort for cases",
+    )
+
+    parser.add_argument(
+        "--output-format",
+        choices=["arrow", "csv.gz", "csv"],
+        help="Format for the output files",
+        default="arrow",
     )
 
     # parse args
     args = parser.parse_args()
 
     # run matching
-    load_matching_config(cases=args.cases, controls=args.controls, config=args.config)
+    load_matching_config(
+        cases=args.cases,
+        controls=args.controls,
+        config=args.config,
+        output_format=args.output_format,
+    )
 
 
 if __name__ == "__main__":
