@@ -2,7 +2,6 @@
 
 import argparse
 import json
-from importlib.metadata import version
 from pathlib import Path
 
 from osmatching.osmatching import match
@@ -75,13 +74,6 @@ def main():
         required=True,
         help="The configuration for the matching action",
         action=ActionConfig,
-    )
-
-    # version
-    parser.add_argument(
-        "--version",
-        action="version",
-        version=f"opensafely-matching {version('opensafely-matching')}",
     )
 
     # Cases
