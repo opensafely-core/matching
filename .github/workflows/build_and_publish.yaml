@@ -7,57 +7,42 @@ on:
 
 
 jobs:
-  tag-new-version:
-    # This uses `conventional commits` to generate tags.  A full list
-    # of valid prefixes is here:
-    # https://github.com/commitizen/conventional-commit-types/blob/master/index.json)
-    #
-    # fix, perf -> patch release
-    # feat -> minor release
-    # BREAKING CHANGE in footer -> major release
-    #
-    # anything else (docs, refactor, etc) does not create a release
+  find-latest:
+    # Find latest tag and published package versions
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ steps.tag.outputs.new_version }}
+      latest_tag: ${{ steps.tag.outputs.latest_tag }}
+      latest_published: ${{ steps.package.outputs.latest_published }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Bump version and push tag
+      - name: Get latest tag
         id: tag
-        uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b  # v6.2
-        # As this workflow is currently written,
-        # this is a redundant check: the workflow should only ever run on push to main.
-        # But it is an extra safeguard and reminder of the behaviour of github-tag-action.
-        # Pull requests can end up being tagged by github-tag-action,
-        # which is probably undesirable and very confusing to work out what's happening.
-        # See https://github.com/opensafely-core/ehrql/commit/3e55492e9c1b537fb5057f19f11f53a713fbae46
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          default_bump: false
-          release_branches: main
-
+        run: echo "latest_tag=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
+      - name: Check latest package version
+        id: package
+        run: |
+          echo "latest_published=v$(curl https://pypi.org/pypi/opensafely-matching/json | jq -r 'last(.releases | to_entries[] | select(.key).key)')" >> "$GITHUB_OUTPUT"
 
   build-and-publish-package:
     runs-on: ubuntu-latest
     name: Build and publish PyPI package
-    needs: tag-new-version
-    if: needs.tag-new-version.outputs.tag
+    needs: find-latest
+    if: needs.find-latest.outputs.latest_tag != needs.find-latest.outputs.latest_published
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Set up Python 3.8
+    - name: Set up Python 3.10
       uses: actions/setup-python@v5
       with:
-        python-version: 3.8
+        python-version: "3.10"
     - name: Install wheel package
       run: |
         pip install wheel
     - name: Generate correct value for VERSION file
       run: |
-        echo ${{ needs.tag-new-version.outputs.tag }} > osmatching/VERSION
+        echo ${{ needs.find-latest.outputs.latest_tag }} > osmatching/VERSION
     - name: Build package
       run: |
         python setup.py sdist bdist_wheel
