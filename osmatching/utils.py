@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 import pandas as pd
 
@@ -17,13 +17,11 @@ DEFAULTS = {
 }
 
 
-DATAFRAME_READER_WRITER = {
-    "read": {
-        ".csv": ("read_csv", {"engine": "pyarrow"}),
-        ".arrow": ("read_feather", {}),
-    },
-    "write": {".csv": "to_csv", ".arrow": "to_feather"},
+DATAFRAME_READER: Dict[str, Tuple] = {
+    ".csv": ("read_csv", {"engine": "pyarrow"}),
+    ".arrow": ("read_feather", {}),
 }
+DATAFRAME_WRITER: Dict[str, str] = {".csv": "to_csv", ".arrow": "to_feather"}
 
 
 def load_config(match_config: Dict) -> Dict[str, Any]:
@@ -50,7 +48,7 @@ def file_suffix(file_path: Path):
 
 def load_dataframe(file_path: Path):
     suffix = file_suffix(file_path).split(".gz")[0]
-    read_method, kwargs = DATAFRAME_READER_WRITER["read"][suffix]
+    read_method, kwargs = DATAFRAME_READER[suffix]
     dataframe = getattr(pd, read_method)(file_path, **kwargs)
     dataframe.set_index("patient_id", inplace=True)
     return dataframe
@@ -59,5 +57,5 @@ def load_dataframe(file_path: Path):
 def write_output_file(df, file_path):
     suffix = file_suffix(file_path).split(".gz")[0]
     # feather requires that we reset the index before writing
-    writer = getattr(df.reset_index(), DATAFRAME_READER_WRITER["write"][suffix])
+    writer = getattr(df.reset_index(), DATAFRAME_WRITER[suffix])
     writer(file_path)
