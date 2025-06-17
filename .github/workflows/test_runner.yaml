@@ -39,10 +39,6 @@ jobs:
   test-opensafely:
     runs-on: ubuntu-latest
     name: Run test suite with opensafely
-
-    strategy:
-      matrix:
-        python-docker-image-version: ["v1", "v2"]
     
     steps:
       - uses: actions/checkout@v4
@@ -52,7 +48,7 @@ jobs:
       - name: Install opensafely
         run: pip install opensafely
       - name: Run tests with opensafely
-        run: opensafely exec python:${{ matrix.python-docker-image-version }} pytest
+        run: opensafely exec python:v2 pytest
 
   test-package-build:
     runs-on: ubuntu-latest
