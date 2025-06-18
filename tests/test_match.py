@@ -14,7 +14,7 @@ from osmatching.osmatching import (
     match,
     pre_calculate_indices,
 )
-from osmatching.utils import load_dataframe
+from osmatching.utils import MatchConfig, load_dataframe
 
 
 FIXTURE_PATH = Path(__file__).parent / "test_data" / "fixtures"
@@ -58,7 +58,7 @@ def test_match_smoke_test(
     match(
         case_df=load_dataframe(FIXTURE_PATH / input_cases_file),
         match_df=load_dataframe(FIXTURE_PATH / input_control_file),
-        **test_matching,
+        match_config=MatchConfig(**test_matching),
     )
     report_path = test_matching["output_path"] / "matching_report_test.txt"
     assert report_path.exists()
@@ -84,7 +84,7 @@ def test_match_smoke_test(
     match(
         case_df=load_dataframe(FIXTURE_PATH / input_cases_file),
         match_df=load_dataframe(FIXTURE_PATH / input_control_file),
-        **test_matching,
+        match_config=MatchConfig(**test_matching),
     )
     report_text1 = report_path.read_text()
     assert report_text1 != report_text
@@ -115,10 +115,10 @@ def test_match_min_matches_per_case(tmp_path, min_per_case, match_count):
         "output_suffix": "_test",
         "output_path": tmp_path / "test_output",
     }
-    matched_cases, matched_matches = match(
+    _, matched_matches = match(
         case_df=load_dataframe(FIXTURE_PATH / "input_cases.csv"),
         match_df=load_dataframe(FIXTURE_PATH / "input_controls.csv"),
-        **test_matching,
+        match_config=MatchConfig(**test_matching),
     )
 
     # set_id is the id of the case that this match matched
@@ -145,7 +145,7 @@ def test_match_min_matches_per_case_cannot_be_less_than_matches_per_case(tmp_pat
         match(
             case_df=load_dataframe(FIXTURE_PATH / "input_cases.csv"),
             match_df=load_dataframe(FIXTURE_PATH / "input_controls.csv"),
-            **test_matching,
+            match_config=MatchConfig(**test_matching),
         )
 
 
@@ -175,7 +175,7 @@ def test_match_drop_cases(tmp_path, drop_cases_from_matches):
     match(
         case_df,
         match_df,
-        **test_matching,
+        match_config=MatchConfig(**test_matching),
     )
     report_path = test_matching["output_path"] / "matching_report_test.txt"
     report_text = report_path.read_text().split("\n")
@@ -220,7 +220,7 @@ def test_replace_match_index_date_with_case(tmp_path, offset, expected_indexdate
     _, matched_matches = match(
         case_df,
         match_df,
-        **test_matching,
+        match_config=MatchConfig(**test_matching),
     )
 
     assert matched_matches.iloc[0].indexdate == expected_indexdate
@@ -250,7 +250,7 @@ def test_replace_match_index_date_offset_error(tmp_path):
         match(
             case_df,
             match_df,
-            **test_matching,
+            match_config=MatchConfig(**test_matching),
         )
 
 
