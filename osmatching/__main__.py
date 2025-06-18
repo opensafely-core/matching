@@ -43,8 +43,8 @@ def load_matching_config(cases: str, controls: str, config: dict, output_format:
         match_df=controls,
         matches_per_case=processed_match_config["matches_per_case"],
         match_variables=processed_match_config["match_variables"],
-        index_date_variable=processed_match_config["index_variable"],
-        closest_match_variables=processed_match_config["closest_match_variable"],
+        index_date_variable=processed_match_config["index_date_variable"],
+        closest_match_variables=processed_match_config["closest_match_variables"],
         date_exclusion_variables=processed_match_config["date_exclusion_variables"],
         min_matches_per_case=processed_match_config["min_matches_per_case"],
         replace_match_index_date_with_case=processed_match_config[
