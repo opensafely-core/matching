@@ -1,4 +1,7 @@
-from typing import Any, Dict
+from pathlib import Path
+from typing import Any, Dict, Tuple
+
+import pandas as pd
 
 
 DEFAULTS = {
@@ -8,10 +11,17 @@ DEFAULTS = {
     "replace_match_index_date_with_case": None,
     "output_suffix": "",
     "indicator_variable_name": "case",
-    "output_path": "outputs/",
-    "input_path": "inputs/",
+    "output_path": "output",
     "drop_cases_from_matches": False,
+    "output_format": "arrow",
 }
+
+
+DATAFRAME_READER: Dict[str, Tuple] = {
+    ".csv": ("read_csv", {"engine": "pyarrow"}),
+    ".arrow": ("read_feather", {}),
+}
+DATAFRAME_WRITER: Dict[str, str] = {".csv": "to_csv", ".arrow": "to_feather"}
 
 
 def load_config(match_config: Dict) -> Dict[str, Any]:
@@ -30,3 +40,22 @@ def load_config(match_config: Dict) -> Dict[str, Any]:
     cfg = DEFAULTS.copy()
     cfg.update(match_config)
     return cfg
+
+
+def file_suffix(file_path: Path):
+    return "".join(file_path.suffixes)
+
+
+def load_dataframe(file_path: Path):
+    suffix = file_suffix(file_path).split(".gz")[0]
+    read_method, kwargs = DATAFRAME_READER[suffix]
+    dataframe = getattr(pd, read_method)(file_path, **kwargs)
+    dataframe.set_index("patient_id", inplace=True)
+    return dataframe
+
+
+def write_output_file(df, file_path):
+    suffix = file_suffix(file_path).split(".gz")[0]
+    # feather requires that we reset the index before writing
+    writer = getattr(df.reset_index(), DATAFRAME_WRITER[suffix])
+    writer(file_path)

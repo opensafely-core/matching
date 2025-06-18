@@ -16,7 +16,7 @@ setup(
     license="GPLv3",
     author_email="tech@opensafely.org",
     python_requires=">=3.8",
-    install_requires=["pandas"],
+    install_requires=["pandas", "pyarrow"],
     entry_points={"console_scripts": ["match=osmatching.__main__:main"]},
     classifiers=["License :: OSI Approved :: GNU General Public License v3 (GPLv3)"],
 )

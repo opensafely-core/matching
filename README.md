@@ -2,7 +2,9 @@
 
 # Simple categorical and scalar variable matching
 
-This tool matches patients in one `.csv` to a specified number of matches in another `.csv`. It does this according to a specified list of categorical and/or scalar variables. 
+This tool matches patients in one dataset file to a specified number of matches in another dataset file. It does this according to a specified list of categorical and/or scalar variables.
+
+Dataset files can be in `.csv`, `.csv.gz` or `.arrow` format.
 
 ## Methodological notes
 This is a work in progress and is implemented for one or two specific study designs, but is intended to be generalisable to other projects, with new features implemented as needed.
@@ -12,7 +14,6 @@ This is a work in progress and is implemented for one or two specific study desi
 - Matches are made in order of the index date of the case/exposed group. This is done to eliminate biases caused by matching people "from the future" before matching people whose index date is earlier. Ask Krishnan Bhaskaran for a more complete/better explanation.
 - Cases that do not get the specified number of matches (as specified by `matches_per_case`) are retained by default. This can be changed using the `min_matches_per_case` option.
 - Matches are picked at random, but with a set seed, meaning that running twice on the same dataset should yield the same results.
-- This was originally implemented by passing a dictionary of options to the function - this is still possible - see [here](#passing-a-dict-of-options-instead).
 
 ## System requirements
 
@@ -25,17 +26,20 @@ pip install opensafely-matching
 ```
 
 ## Input data
-This is expected to be in two CSVs - one `case_csv` for the case/exposed group and one `match_csv` for the population to be matched. These data must have all the variables that are specified in arguments when running, and can have any number of other variables (all of which are returned in the [output](#outputs) CSVs).
+This is expected to be in two dataset files in one of the supported formats (`.csv`, `.csv.gz` or `.arrow`) - one for the case/exposed group and one for the population to be matched. These data must have all the variables that are specified in arguments when running, and can have any number of other variables (all of which are returned in the [output](#outputs) files).
 
 ## Use
+
+### In a python script
 
 Matching is run by calling the match function with at least the required arguments, as per:
 ```py
 from osmatching import match
+from osmatching.utils import load_dataframe
 
 match(
-    case_csv="input_cases",
-    match_csv="input_matches",
+    case_df=load_dataframe("input_cases.arrow"),
+    match_df=load_dataframe("input_matches.arrow"),
     matches_per_case=3,
     match_variables={
         "sex": "category",
@@ -44,20 +48,62 @@ match(
     index_date_variable="indexdate",
 )
 ```
-This matches 3 matches per case, on the variables `sex`, and `age` (±5 years).\
+
+This matches 3 matches per case, on the variables `sex`, and `age` (±5 years) and produces output files in the default `.arrow` format.\
 **Outputs:**\
-`output/matched_cases.csv`\
-`output/matched_matches.csv`\
-`output/matched_combined.csv`\
+`output/matched_cases.arrow`\
+`output/matched_matches.arrow`\
+`output/matched_combined.arrow`\
 `output/matching_report.txt`
+
+### From the command line
+
+```sh
+usage: match [-h] --config CONFIG [--version] [--cases CASES] [--controls CONTROLS] [--output-format {arrow,csv.gz,csv}]
+
+Matches cases to controls if provided with 2 datasets
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --config CONFIG       The configuration for the matching action
+  --version             show program version number and exit
+  --cases CASES         Data file that contains the cases
+  --controls CONTROLS   Data file that contains the cohort for cases
+  --output-format {arrow,csv.gz,csv}
+                        Format for the output files
+```
+
+To run the above example from the command line:
+```sh
+match --cases input_cases.arrow --controls input_matches.arrow --config config.json
+```
+where `config.json` is a file containing additional arguments to `match()`:
+```
+{
+  "matches_per_case": 3,
+  "match_variables": {
+    "sex": "category",
+    "age": 5
+  },
+  "index_variable": "indexdate"
+}
+```
+
+Alternatively, pass config on the command line as a json string:
+```
+match \
+  --cases input_cases.arrow \
+  --controls input_matches.arrow \
+  --config '{"matches_per_case": 3, "match_variables": {"sex": "category", "age": 5}, "index_variable": "indexdate"}'
+```
 
 ### Required arguments
 
-`case_csv`\
-The name of the CSV containing case/exposed population.
+`case_df`\
+A dataframe containing case/exposed population.
 
-`match_csv`\
-The name of the CSV containing the population of patients to match onto the case/exposed population.
+`match_df`\
+A dataframe containing the population of patients to match onto the case/exposed population.
 
 `matches_per_case`\
 The integer number of matches to match to each case/exposed patient, where possible.
@@ -101,28 +147,33 @@ A binary variable (`0` or `1`) is included in the output data to indicate whethe
 If you are matching on multiple populations within the same project, you may want to specify a suffix to identify each output and prevent them being overwritten.
 
 `output_path` (default: `"output"`)\
-The folder where the outputs (CSVs and matching report) should be saved.
+The folder where the outputs (`csv`, `csv.gz` or `arrow` files and matching report) should be saved.
+
+`output_format` (default: `"arrow"`)\
+The format to write output files in.
 
 `drop_cases_from_matches` (default: `False`)\
 If `True`, all `patient_id`s in the case CSV are dropped from the match CSV before matching starts.
 
 ## Outputs
 
+### Format
+Files can be output as `csv`, `csv.gz` or `arrow` files. The default is `arrow`.
+
 ### Datasets
-All the below data outputs contain all of the columns that were in the input CSVs, plus:
+All the below data outputs contain all of the columns that were in the input datasets, plus:
 
 - `set_id` - a variable identifying the groups of matched cases and matches. It is the same as the patient ID of the case.
 
 - `case` - a binary variable (`0` or `1`) to indicate whether each patient is a "case" or "match". This is named `case` by default, but the name can be user defined (see `indicator_variable_name` above).
 
-`{output_path}/matched_cases{output_suffix}.csv`\
+`{output_path}/matched_cases{output_suffix}.{output_format}`\
 Contains all the cases that were matched to the specified number of matches.
 
-
-`{output_path}/matched_matches{output_suffix}.csv`\
+`{output_path}/matched_matches{output_suffix}.{output_format}`\
 Contains all the matches that were matched to cases/exposed patients.
 
-`{output_path}/matched_combined{output_suffix}.csv`\
+`{output_path}/matched_combined{output_suffix}.{output_format}`\
 Contains the two datasets above appended together.
 
 ### Matching report
@@ -131,7 +182,7 @@ This contains patient counts for each stage of the matching process, then basic 
 ```
 Matching started at: 2020-11-26 18:54:52.447761
 
-CSV import:
+Data import:
 Completed 2020-11-26 18:54:52.493762
 Cases    100
 Matches  10000
@@ -186,10 +237,11 @@ Match COVID population to pneumonia population with:
  - excluding patients who died or had various outcomes before their index date
 ```py
 from osmatching import match
+from osmatching.utils import load_dataframe
 
 match(
-    case_csv="input_covid",
-    match_csv="input_pneumonia",
+    case_df=load_dataframe("input_covid.csv.gz"),
+    match_df=load_dataframe("input_pneumonia.csv.gz"),
     matches_per_case=1,
     match_variables={
         "sex": "category",
@@ -207,13 +259,12 @@ match(
         "previous_stroke_hospital": "before",
     },
     output_suffix="_pneumonia",
-    output_path="test_data",
 )
 ```
 **Outputs:**\
-`output/matched_cases_pneumonia.csv`\
-`output/matched_matches_pneumonia.csv`\
-`output/matched_combined_pneumonia.csv`\
+`output/matched_cases_pneumonia.arrow`\
+`output/matched_matches_pneumonia.arrow`\
+`output/matched_combined_pneumonia.arrow`\
 `output/matching_report_pneumonia.txt`
 
 ---
@@ -226,10 +277,11 @@ Match COVID population to general population from 2019 with:
  - case/match groups where there isn't at least one match are excluded
 ```py
 from osmatching import match
+from osmatching.utils import load_dataframe
 
 match(
-    case_csv="input_covid",
-    match_csv="input_control_2019",
+    case_df=load_dataframe("input_covid.csv.gz"),
+    match_df=load_dataframe("input_control_2019.csv.gz"),
     matches_per_case=2,
     match_variables={
         "sex": "category",
@@ -248,13 +300,12 @@ match(
         "previous_stroke_hospital": "before",
     },
     output_suffix="_control_2019",
-    output_path="test_data",
 )
 ```
 **Outputs:**\
-`output/matched_cases_control_2019.csv`\
-`output/matched_matches_control_2019.csv`\
-`output/matched_combined_control_2019.csv`\
+`output/matched_cases_control_2019.arrow`\
+`output/matched_matches_control_2019.arrow`\
+`output/matched_combined_control_2019.arrow`\
 `output/matching_report_control_2019.txt`
 
 ---
@@ -265,11 +316,11 @@ Match COVID population to general population from 2020 with:
  - greedy matching on age 
  - excluding patients who died or had various outcomes before their index date
 ```py
-from osmatching import match
+from osmatching.utils import load_dataframe
 
 match(
-    case_csv="input_covid",
-    match_csv="input_control_2020",
+    case_df=load_dataframe("input_covid.csv.gz"),
+    match_df=load_dataframe("input_control_2020.csv.gz"),
     matches_per_case=2,
     match_variables={
         "sex": "category",
@@ -287,39 +338,10 @@ match(
         "previous_stroke_hospital": "before",
     },
     output_suffix="_control_2020",
-    output_path="test_data",
 )
 ```
 **Outputs:**\
-`output/matched_cases_control_2020.csv`\
-`output/matched_matches_control_2020.csv`\
-`output/matched_combined_control_2020.csv`\
+`output/matched_cases_control_2020.arrow`\
+`output/matched_matches_control_2020.arrow`\
+`output/matched_combined_control_2020.arrow`\
 `output/matching_report_control_2020.txt`
-
-## Passing a dict of options instead
-Originally this was run by passing a Python dictionary to the function. This is still possible:
-```py
-pneumonia = {
-    "case_csv": "input_covid",
-    "match_csv": "input_pneumonia",
-    "matches_per_case": 1,
-    "match_variables": {
-        "sex": "category",
-        "age": 1,
-        "stp": "category",
-        "indexdate": "month_only",
-    },
-    "closest_match_variables": ["age"],
-    "index_date_variable": "indexdate",
-    "date_exclusion_variables": {
-        "died_date_ons": "before",
-        "previous_vte_gp": "before",
-        "previous_vte_hospital": "before",
-        "previous_stroke_gp": "before",
-        "previous_stroke_hospital": "before",
-    },
-    "output_suffix": "pneumonia",
-    "output_path": "test_data",
-}
-match(**pneumonia)
-```
