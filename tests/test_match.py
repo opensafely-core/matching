@@ -149,6 +149,43 @@ def test_match_min_matches_per_case_cannot_be_less_than_matches_per_case(tmp_pat
         )
 
 
+def test_match_closest_match_variables_empty(tmp_path):
+    """Test that match() runs and produces a matching report and outputs."""
+    test_matching = {
+        "matches_per_case": 1,
+        "match_variables": {
+            "sex": "category",
+            "age": 5,
+        },
+        "index_date_variable": "indexdate",
+        "output_suffix": "_test",
+        "output_path": tmp_path / "test_output",
+    }
+    case_matches_1, matched_matches_1 = match(
+        case_df=load_dataframe(FIXTURE_PATH / "input_cases.csv"),
+        match_df=load_dataframe(FIXTURE_PATH / "input_controls.csv"),
+        match_config=MatchConfig(**test_matching),
+    )
+
+    test_matching.update({"closest_match_variables": []})
+    case_matches_2, matched_matches_2 = match(
+        case_df=load_dataframe(FIXTURE_PATH / "input_cases.csv"),
+        match_df=load_dataframe(FIXTURE_PATH / "input_controls.csv"),
+        match_config=MatchConfig(**test_matching),
+    )
+
+    pd.testing.assert_frame_equal(case_matches_1, case_matches_2)
+    pd.testing.assert_frame_equal(matched_matches_1, matched_matches_2)
+
+    test_matching.update({"closest_match_variables": None})
+    with pytest.raises(TypeError):
+        match(
+            case_df=load_dataframe(FIXTURE_PATH / "input_cases.csv"),
+            match_df=load_dataframe(FIXTURE_PATH / "input_controls.csv"),
+            match_config=MatchConfig(**test_matching),
+        )
+
+
 @pytest.mark.parametrize("drop_cases_from_matches", [True, False])
 def test_match_drop_cases(tmp_path, drop_cases_from_matches):
     test_matching = {

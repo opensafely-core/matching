@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -10,10 +10,10 @@ class MatchConfig:
     matches_per_case: int
     match_variables: dict
     index_date_variable: str
-    closest_match_variables: list[str] = None
-    date_exclusion_variables: dict[Any, Any] = None
+    closest_match_variables: list[str] = field(default_factory=list)
+    date_exclusion_variables: dict[Any, Any] = field(default_factory=dict)
     min_matches_per_case: int = 0
-    replace_match_index_date_with_case: str = None
+    replace_match_index_date_with_case: str = ""
     output_suffix: str = ""
     indicator_variable_name: str = "case"
     output_path: str = "output"
