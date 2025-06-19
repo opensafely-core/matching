@@ -225,9 +225,6 @@ def match(
     - save the results in the specified output format
     """
 
-    if match_config.min_matches_per_case > match_config.matches_per_case:
-        raise ValueError("min_matches_per_case cannot be greater than matches_per_case")
-
     # Make sure the output path exists
     match_config.output_path.mkdir(parents=True, exist_ok=True)
 

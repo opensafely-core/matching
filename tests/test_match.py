@@ -128,27 +128,6 @@ def test_match_min_matches_per_case(tmp_path, min_per_case, match_count):
         assert len(matched_matches[matched_matches.set_id == set_id]) >= min_per_case
 
 
-def test_match_min_matches_per_case_cannot_be_less_than_matches_per_case(tmp_path):
-    """Test that match() runs and produces a matching report and outputs."""
-    test_matching = {
-        "matches_per_case": 1,
-        "min_matches_per_case": 2,
-        "match_variables": {
-            "sex": "category",
-        },
-        "index_date_variable": "indexdate",
-        "output_path": tmp_path,
-    }
-    with pytest.raises(
-        ValueError, match="min_matches_per_case cannot be greater than matches_per_case"
-    ):
-        match(
-            case_df=load_dataframe(FIXTURE_PATH / "input_cases.csv"),
-            match_df=load_dataframe(FIXTURE_PATH / "input_controls.csv"),
-            match_config=MatchConfig(**test_matching),
-        )
-
-
 def test_match_closest_match_variables_empty(tmp_path):
     """Test that match() runs and produces a matching report and outputs."""
     test_matching = {

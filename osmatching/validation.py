@@ -18,4 +18,8 @@ def parse_and_validate_config(config: "MatchConfig"):
     # ensure output_path is a Path
     config.output_path = Path(config.output_path)
 
+    # validate min matches per case
+    if config.min_matches_per_case > config.matches_per_case:
+        raise ValueError("min_matches_per_case cannot be greater than matches_per_case")
+
     return config
