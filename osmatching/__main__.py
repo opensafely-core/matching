@@ -2,9 +2,7 @@
 
 import argparse
 import json
-from importlib.metadata import version
 from pathlib import Path
-from typing import Dict
 
 from osmatching.osmatching import match
 from osmatching.utils import file_suffix, load_config, load_dataframe
@@ -37,7 +35,7 @@ class LoadDataframe(argparse.Action):
         setattr(namespace, self.dest, load_dataframe(data_filepath))
 
 
-def load_matching_config(cases: str, controls: str, config: Dict, output_format: str):
+def load_matching_config(cases: str, controls: str, config: dict, output_format: str):
     processed_match_config = load_config(config)
 
     match(
@@ -76,13 +74,6 @@ def main():
         required=True,
         help="The configuration for the matching action",
         action=ActionConfig,
-    )
-
-    # version
-    parser.add_argument(
-        "--version",
-        action="version",
-        version=f"opensafely-matching {version('opensafely-matching')}",
     )
 
     # Cases
