@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 from osmatching.osmatching import match
@@ -21,7 +22,15 @@ class LoadMatchingConfig(argparse.Action):
         except json.JSONDecodeError as exc:
             raise argparse.ArgumentTypeError(f"Could not parse {values}\n{exc}")
 
-        config = load_config(config)
+        config, errors = load_config(config)
+        if errors:
+            print("\nErrors were found in the provided configuration:")
+            for key, errorlist in errors.items():
+                print(f"\n  {key}")
+                for error in errorlist:
+                    print(f"  * {error}")
+            print("\nPlease correct these errors and try again")
+            sys.exit(2)
         setattr(namespace, self.dest, config)
 
 

@@ -36,6 +36,7 @@ class MatchConfig:
             date_exclusion_variables=date_exclusion_variables,
         )
 
+
 DATAFRAME_READER: dict[str, tuple] = {
     ".csv": ("read_csv", {"engine": "pyarrow"}),
     ".arrow": ("read_feather", {}),
@@ -53,7 +54,9 @@ def load_config(match_config: dict) -> MatchConfig:
             taken from json
 
     Returns:
-        MatchConfig: Configuration instance to be passed to entry point.
+        tuple of MatchConfig, errors (dict)
+        - MatchConfig: Configuration instance to be passed to entry point
+        - errors: a dict of MatchConfig fields tp validation errors
     """
     return parse_and_validate_config(MatchConfig.from_dict(match_config))
 

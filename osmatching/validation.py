@@ -1,3 +1,4 @@
+from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -18,8 +19,12 @@ def parse_and_validate_config(config: "MatchConfig"):
     # ensure output_path is a Path
     config.output_path = Path(config.output_path)
 
+    errors = defaultdict(list)
+
     # validate min matches per case
     if config.min_matches_per_case > config.matches_per_case:
-        raise ValueError("min_matches_per_case cannot be greater than matches_per_case")
+        errors["min_matches_per_case"].append(
+            f"min_matches_per_case ({config.min_matches_per_case}) cannot be greater than matches_per_case ({config.matches_per_case})"
+        )
 
-    return config
+    return config, errors

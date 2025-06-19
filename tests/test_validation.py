@@ -14,12 +14,11 @@ CONFIG_DICT_DEFAULTS = {
 
 def get_match_config(test_config):
     test_data = {**CONFIG_DICT_DEFAULTS, **test_config}
-    return MatchConfig(**test_data)
+    return MatchConfig.from_dict(test_data)
 
 
 def test_output_path():
-    test_data = {**CONFIG_DICT_DEFAULTS, "output_path": "test_output"}
-    config = MatchConfig.from_dict(test_data)
+    config = get_match_config({"output_path": "test_output"})
     assert isinstance(config.output_path, Path)
 
 
@@ -30,14 +29,15 @@ def test_defaults():
     assert config.date_exclusion_variables == {}
 
 
-@pytest.mark.parametrize("min_matches,error", [(0, False), (1, False), (2, True)])
+@pytest.mark.parametrize(
+    "min_matches,error",
+    [
+        (0, None),
+        (1, None),
+        (2, ["min_matches_per_case (2) cannot be greater than matches_per_case (1)"]),
+    ],
+)
 def test_min_matches_per_case(min_matches, error):
     config = get_match_config({"min_matches_per_case": min_matches})
-    if error:
-        with pytest.raises(
-            ValueError,
-            match="min_matches_per_case cannot be greater than matches_per_case",
-        ):
-            parse_and_validate_config(config)
-    else:
-        parse_and_validate_config(config)
+    config, errors = parse_and_validate_config(config)
+    assert errors.get("min_matches_per_case") == error
