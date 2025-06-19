@@ -5,10 +5,10 @@ import json
 from pathlib import Path
 
 from osmatching.osmatching import match
-from osmatching.utils import file_suffix, load_config, load_dataframe
+from osmatching.utils import MatchConfig, file_suffix, load_config, load_dataframe
 
 
-class ActionConfig(argparse.Action):
+class LoadMatchingConfig(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         # values can be a path to a file, or a json string
         path = Path(values)
@@ -20,6 +20,8 @@ class ActionConfig(argparse.Action):
                 config = json.loads(values)
         except json.JSONDecodeError as exc:
             raise argparse.ArgumentTypeError(f"Could not parse {values}\n{exc}")
+
+        config = load_config(config)
         setattr(namespace, self.dest, config)
 
 
@@ -35,14 +37,14 @@ class LoadDataframe(argparse.Action):
         setattr(namespace, self.dest, load_dataframe(data_filepath))
 
 
-def load_matching_config(cases: str, controls: str, config: dict, output_format: str):
-    config["output_format"] = config.get("output_format", output_format)
-    processed_match_config = load_config(config)
-
+def load_matching_config(
+    cases: str, controls: str, config: MatchConfig, output_format: str
+):
+    config.output_format = output_format
     match(
         case_df=cases,
         match_df=controls,
-        match_config=processed_match_config,
+        match_config=config,
     )
 
 
@@ -61,7 +63,7 @@ def main():
         "--config",
         required=True,
         help="The configuration for the matching action",
-        action=ActionConfig,
+        action=LoadMatchingConfig,
     )
 
     # Cases
