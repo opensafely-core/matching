@@ -37,10 +37,12 @@ class LoadDataframe(argparse.Action):
         setattr(namespace, self.dest, load_dataframe(data_filepath))
 
 
-def load_matching_config(
-    cases: str, controls: str, config: MatchConfig, output_format: str
+def run_matching(
+    cases: str, controls: str, config: MatchConfig, output_format: str | None = None
 ):
-    config.output_format = output_format
+    # an explicitly provided command line output_format takes precedence over config value
+    if output_format is not None:
+        config.output_format = output_format
     match(
         case_df=cases,
         match_df=controls,
@@ -82,14 +84,13 @@ def main():
         "--output-format",
         choices=["arrow", "csv.gz", "csv"],
         help="Format for the output files",
-        default="arrow",
     )
 
     # parse args
     args = parser.parse_args()
 
     # run matching
-    load_matching_config(
+    run_matching(
         cases=args.cases,
         controls=args.controls,
         config=args.config,
