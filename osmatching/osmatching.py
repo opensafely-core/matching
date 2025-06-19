@@ -2,7 +2,6 @@
 
 import copy
 from datetime import datetime
-from pathlib import Path
 from typing import Optional
 
 import pandas as pd
@@ -229,11 +228,12 @@ def match(
     if match_config.min_matches_per_case > match_config.matches_per_case:
         raise ValueError("min_matches_per_case cannot be greater than matches_per_case")
 
-    # Make sure the output path is a Path and it exists
-    output_path = Path(match_config.output_path)
-    output_path.mkdir(parents=True, exist_ok=True)
+    # Make sure the output path exists
+    match_config.output_path.mkdir(parents=True, exist_ok=True)
 
-    report_path = output_path / f"matching_report{match_config.output_suffix}.txt"
+    report_path = (
+        match_config.output_path / f"matching_report{match_config.output_suffix}.txt"
+    )
 
     def matching_report(text_list: list, erase: bool = False) -> None:
         if erase and report_path.is_file():
@@ -380,12 +380,16 @@ def match(
 
     ## Write output files
     file_suffix_ext = f"{match_config.output_suffix}.{match_config.output_format}"
-    write_output_file(matched_cases, output_path / f"matched_cases{file_suffix_ext}")
     write_output_file(
-        matched_matches, output_path / f"matched_matches{file_suffix_ext}"
+        matched_cases, match_config.output_path / f"matched_cases{file_suffix_ext}"
+    )
+    write_output_file(
+        matched_matches, match_config.output_path / f"matched_matches{file_suffix_ext}"
     )
     combined = pd.concat([matched_cases, matched_matches])
-    write_output_file(combined, output_path / f"matched_combined{file_suffix_ext}")
+    write_output_file(
+        combined, match_config.output_path / f"matched_combined{file_suffix_ext}"
+    )
 
     # return the matched dataframes, for ease of testing
     return matched_cases, matched_matches

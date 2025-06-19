@@ -4,6 +4,8 @@ from typing import Any
 
 import pandas as pd
 
+from osmatching.validation import parse_and_validate_config
+
 
 @dataclass
 class MatchConfig:
@@ -30,18 +32,17 @@ DATAFRAME_WRITER: dict[str, str] = {".csv": "to_csv", ".arrow": "to_feather"}
 
 def load_config(match_config: dict) -> MatchConfig:
     """
-    Takes in match configuration and changes these key-value pairs
-    where indicated by the match config. All other key-value pairs
-    are left as default values
+    Converts a match configuration dictionary to a MatchConfig
+    object.
 
     Args:
         match_config (dict): dictionary of the match configuration
             taken from json
 
     Returns:
-        dict (cfg): Configuration dictionary to be passed to entry point.
+        MatchConfig: Configuration instance to be passed to entry point.
     """
-    return MatchConfig(**match_config)
+    return parse_and_validate_config(MatchConfig(**match_config))
 
 
 def file_suffix(file_path: Path):
