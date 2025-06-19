@@ -12,6 +12,12 @@ if TYPE_CHECKING:  # pragma: no cover
     from osmatching.utils import MatchConfig
 
 
+def validate_required_vars(config):
+    for var in config.required_vars():
+        if getattr(config, var) is None:
+            yield var
+
+
 def parse_and_validate_config(config: "MatchConfig"):
     """
     Validate config values where possible in advance of any calculations
@@ -21,10 +27,16 @@ def parse_and_validate_config(config: "MatchConfig"):
 
     errors = defaultdict(list)
 
+    for missing in validate_required_vars(config):
+        errors[missing].append(f"Not found: `{missing}` is a required config variable")
+
     # validate min matches per case
-    if config.min_matches_per_case > config.matches_per_case:
+    if (
+        config.matches_per_case is not None
+        and config.min_matches_per_case > config.matches_per_case
+    ):
         errors["min_matches_per_case"].append(
-            f"min_matches_per_case ({config.min_matches_per_case}) cannot be greater than matches_per_case ({config.matches_per_case})"
+            f"`min_matches_per_case` ({config.min_matches_per_case}) cannot be greater than `matches_per_case` ({config.matches_per_case})"
         )
 
     return config, errors

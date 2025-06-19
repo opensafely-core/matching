@@ -165,7 +165,7 @@ def test_config_validation_errors(capsys):
 Errors were found in the provided configuration:
 
   min_matches_per_case
-  * min_matches_per_case (2) cannot be greater than matches_per_case (1)
+  * `min_matches_per_case` (2) cannot be greater than `matches_per_case` (1)
 
 Please correct these errors and try again
 """

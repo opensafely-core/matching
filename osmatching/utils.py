@@ -9,9 +9,9 @@ from osmatching.validation import parse_and_validate_config
 
 @dataclass
 class MatchConfig:
-    matches_per_case: int
-    match_variables: dict
-    index_date_variable: str
+    matches_per_case: int | None = None
+    match_variables: dict | None = None
+    index_date_variable: str | None = None
     closest_match_variables: list[str] = field(default_factory=list)
     date_exclusion_variables: dict[Any, Any] = field(default_factory=dict)
     min_matches_per_case: int = 0
@@ -35,6 +35,10 @@ class MatchConfig:
             closest_match_variables=closest_match_variables,
             date_exclusion_variables=date_exclusion_variables,
         )
+
+    @staticmethod
+    def required_vars():
+        return ["matches_per_case", "match_variables", "index_date_variable"]
 
 
 DATAFRAME_READER: dict[str, tuple] = {

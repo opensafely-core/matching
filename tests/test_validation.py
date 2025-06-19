@@ -34,10 +34,40 @@ def test_defaults():
     [
         (0, None),
         (1, None),
-        (2, ["min_matches_per_case (2) cannot be greater than matches_per_case (1)"]),
+        (
+            2,
+            [
+                "`min_matches_per_case` (2) cannot be greater than `matches_per_case` (1)"
+            ],
+        ),
     ],
 )
 def test_min_matches_per_case(min_matches, error):
     config = get_match_config({"min_matches_per_case": min_matches})
     config, errors = parse_and_validate_config(config)
     assert errors.get("min_matches_per_case") == error
+
+
+@pytest.mark.parametrize(
+    "config_vars,error_keys",
+    [
+        (
+            {
+                "matches_per_case": 1,
+            },
+            ["match_variables", "index_date_variable"],
+        ),
+        (
+            {
+                "index_date_variable": "index_date",
+                "match_variables": {"age": 5},
+            },
+            ["matches_per_case"],
+        ),
+        ({}, ["matches_per_case", "match_variables", "index_date_variable"]),
+    ],
+)
+def test_missing_required_vars(config_vars, error_keys):
+    config = MatchConfig(**config_vars)
+    config, errors = parse_and_validate_config(config)
+    assert list(errors.keys()) == error_keys
