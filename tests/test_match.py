@@ -430,25 +430,6 @@ def test_date_exclusions():
     assert excl_ser.equals(pd.Series([True, True, False, True, False, True]))
 
 
-def test_date_exclusions_invalid_type():
-    df1 = pd.DataFrame.from_records(
-        [
-            {"died_date": "2019-03-12"},
-        ]
-    )
-    df1["died_date"] = pd.to_datetime(df1["died_date"])
-    date_exclusion_variables = {
-        "died_date": "on_or_before",
-    }
-    index_date = "2020-02-01"
-
-    with pytest.raises(
-        Exception,
-        match="Date exclusion type 'on_or_before' for variable 'died_date' invalid",
-    ):
-        date_exclusions(df1, date_exclusion_variables, index_date)
-
-
 def test_greedily_pick_matches():
     """
     Runs greedily_pick_matches on synthetic data and compares the test_data with

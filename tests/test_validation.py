@@ -81,3 +81,22 @@ def test_replace_none_with_default():
     assert errors == {}
     assert config.date_exclusion_variables == {}
     assert config.closest_match_variables == []
+
+
+def test_date_exclusions_invalid_type():
+    config = get_match_config(
+        {
+            "date_exclusion_variables": {
+                "died_date": "on_or_before",
+                "event_date": "on_or_after",
+                "hospitalisation_date": "before",
+            }
+        }
+    )
+    config, errors = parse_and_validate_config(config)
+    assert errors == {
+        "date_exclusion_variables": [
+            "Invalid exclusion type 'on_or_before' for variable 'died_date'. Allowed types are 'before' or 'after'",
+            "Invalid exclusion type 'on_or_after' for variable 'event_date'. Allowed types are 'before' or 'after'",
+        ]
+    }

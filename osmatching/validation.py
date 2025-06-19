@@ -23,6 +23,12 @@ def replace_none_with_default(config, name, default):
         setattr(config, name, default)
 
 
+def validate_date_exclusions(date_exclusion_variables):
+    for exclusion_var, when in date_exclusion_variables.items():
+        if when not in ["before", "after"]:
+            yield exclusion_var, when
+
+
 def parse_and_validate_config(config: "MatchConfig"):
     """
     Validate config values where possible in advance of any calculations
@@ -47,5 +53,13 @@ def parse_and_validate_config(config: "MatchConfig"):
     # ensure we don't have None values where we expect empty lists/dicts
     replace_none_with_default(config, "closest_match_variables", [])
     replace_none_with_default(config, "date_exclusion_variables", {})
+
+    # validate date exclusion types
+    for exclusion_var, invalid_when in validate_date_exclusions(
+        config.date_exclusion_variables
+    ):
+        errors["date_exclusion_variables"].append(
+            f"Invalid exclusion type '{invalid_when}' for variable '{exclusion_var}'. Allowed types are 'before' or 'after'"
+        )
 
     return config, errors

@@ -148,14 +148,14 @@ def date_exclusions(df1: pd.DataFrame, date_exclusion_variables: dict, index_dat
     """
     exclusions = pd.Series(data=False, index=df1.index)
     for exclusion_var, before_after in date_exclusion_variables.items():
-        if before_after == "before":
-            variable_bool = df1[exclusion_var] < index_date
-        elif before_after == "after":
-            variable_bool = df1[exclusion_var] > index_date
-        else:
-            raise Exception(
-                f"Date exclusion type '{before_after}' for variable '{exclusion_var}' invalid"
-            )
+        match before_after:
+            case "before":
+                variable_bool = df1[exclusion_var] < index_date
+            case "after":
+                variable_bool = df1[exclusion_var] > index_date
+            case _:  # pragma: no cover
+                # This should be caught in config validation so we should never get here
+                assert False, "Invalid date exclusion type"
         exclusions = exclusions | variable_bool
     return exclusions
 
