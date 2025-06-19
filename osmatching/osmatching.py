@@ -165,7 +165,7 @@ def greedily_pick_matches(
     matches_per_case: int,
     matched_rows: pd.DataFrame,
     case_row: pd.DataFrame,
-    closest_match_variables: list = [],
+    closest_match_variables: list,
 ) -> pd.Index:
     """
     Cuts the eligible_matches list to the number of matches specified. This is a
@@ -394,7 +394,7 @@ def match(
 def compare_populations(
     matched_cases: pd.DataFrame,
     matched_matches: pd.DataFrame,
-    closest_match_variables: list = [],
+    closest_match_variables: list,
 ) -> pd.DataFrame:
     """
     Takes the list of closest_match_variables and describes each of them for the matched
