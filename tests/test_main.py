@@ -29,8 +29,7 @@ def cli_ouput_path(request, tmp_path):
     with open(FIXTURE_PATH / "config.json") as configfile:
         config = json.load(configfile)
         config["output_path"] = str(tmp_path)
-    # ADD config output_format
-    config["output_format"] = output_format
+
     with open(tmp_path / "config.json", "w") as test_configfile:
         json.dump(config, test_configfile)
 
@@ -53,6 +52,32 @@ def test_main(cli_ouput_path):
     main()
     assert (output_path / "matching_report_test.txt").exists()
     assert (output_path / f"matched_cases_test.{output_format}").exists()
+
+
+@pytest.mark.parametrize("include_cli_arg", [True, False])
+def test_cli_output_format(tmp_path, include_cli_arg):
+    # The config default is arrow. If provided, a cli arg overrides it.
+    config = {
+        "matches_per_case": 1,
+        "match_variables": {"age": "category"},
+        "index_date_variable": "indexdate",
+        "output_path": str(tmp_path),
+        "output_format": "arrow",
+    }
+    sys.argv = [
+        "match",
+        "--cases",
+        str(FIXTURE_PATH / "input_cases.arrow"),
+        "--controls",
+        str(FIXTURE_PATH / "input_controls.arrow"),
+        "--config",
+        json.dumps(config),
+    ]
+    if include_cli_arg:
+        sys.argv.extend(["--output-format", "csv.gz"])
+    main()
+    assert (tmp_path / "matched_cases.csv.gz").exists() == include_cli_arg
+    assert (tmp_path / "matched_cases.arrow").exists() == (not include_cli_arg)
 
 
 def test_input_file_does_not_exist():

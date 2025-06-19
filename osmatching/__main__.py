@@ -5,10 +5,10 @@ import json
 from pathlib import Path
 
 from osmatching.osmatching import match
-from osmatching.utils import file_suffix, load_config, load_dataframe
+from osmatching.utils import MatchConfig, file_suffix, load_config, load_dataframe
 
 
-class ActionConfig(argparse.Action):
+class LoadMatchingConfig(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         # values can be a path to a file, or a json string
         path = Path(values)
@@ -20,6 +20,8 @@ class ActionConfig(argparse.Action):
                 config = json.loads(values)
         except json.JSONDecodeError as exc:
             raise argparse.ArgumentTypeError(f"Could not parse {values}\n{exc}")
+
+        config = load_config(config)
         setattr(namespace, self.dest, config)
 
 
@@ -35,26 +37,16 @@ class LoadDataframe(argparse.Action):
         setattr(namespace, self.dest, load_dataframe(data_filepath))
 
 
-def load_matching_config(cases: str, controls: str, config: dict, output_format: str):
-    processed_match_config = load_config(config)
-
+def run_matching(
+    cases: str, controls: str, config: MatchConfig, output_format: str | None = None
+):
+    # an explicitly provided command line output_format takes precedence over config value
+    if output_format is not None:
+        config.output_format = output_format
     match(
         case_df=cases,
         match_df=controls,
-        matches_per_case=processed_match_config["matches_per_case"],
-        match_variables=processed_match_config["match_variables"],
-        index_date_variable=processed_match_config["index_variable"],
-        closest_match_variables=processed_match_config["closest_match_variable"],
-        date_exclusion_variables=processed_match_config["date_exclusion_variables"],
-        min_matches_per_case=processed_match_config["min_matches_per_case"],
-        replace_match_index_date_with_case=processed_match_config[
-            "replace_match_index_date_with_case"
-        ],
-        indicator_variable_name=processed_match_config["indicator_variable_name"],
-        output_path=processed_match_config["output_path"],
-        drop_cases_from_matches=processed_match_config["drop_cases_from_matches"],
-        output_suffix=processed_match_config["output_suffix"],
-        output_format=processed_match_config["output_format"],
+        match_config=config,
     )
 
 
@@ -73,7 +65,7 @@ def main():
         "--config",
         required=True,
         help="The configuration for the matching action",
-        action=ActionConfig,
+        action=LoadMatchingConfig,
     )
 
     # Cases
@@ -92,14 +84,13 @@ def main():
         "--output-format",
         choices=["arrow", "csv.gz", "csv"],
         help="Format for the output files",
-        default="arrow",
     )
 
     # parse args
     args = parser.parse_args()
 
     # run matching
-    load_matching_config(
+    run_matching(
         cases=args.cases,
         controls=args.controls,
         config=args.config,

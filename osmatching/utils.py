@@ -1,20 +1,24 @@
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
 
-DEFAULTS = {
-    "closest_match_variable": None,
-    "date_exclusion_variables": None,
-    "min_matches_per_case": 0,
-    "replace_match_index_date_with_case": None,
-    "output_suffix": "",
-    "indicator_variable_name": "case",
-    "output_path": "output",
-    "drop_cases_from_matches": False,
-    "output_format": "arrow",
-}
+@dataclass
+class MatchConfig:
+    matches_per_case: int
+    match_variables: dict
+    index_date_variable: str
+    closest_match_variables: list[str] = field(default_factory=list)
+    date_exclusion_variables: dict[Any, Any] = field(default_factory=dict)
+    min_matches_per_case: int = 0
+    replace_match_index_date_with_case: str = ""
+    output_suffix: str = ""
+    indicator_variable_name: str = "case"
+    output_path: str = "output"
+    drop_cases_from_matches: bool = False
+    output_format: str = "arrow"
 
 
 DATAFRAME_READER: dict[str, tuple] = {
@@ -24,7 +28,7 @@ DATAFRAME_READER: dict[str, tuple] = {
 DATAFRAME_WRITER: dict[str, str] = {".csv": "to_csv", ".arrow": "to_feather"}
 
 
-def load_config(match_config: dict) -> dict[str, Any]:
+def load_config(match_config: dict) -> MatchConfig:
     """
     Takes in match configuration and changes these key-value pairs
     where indicated by the match config. All other key-value pairs
@@ -37,9 +41,7 @@ def load_config(match_config: dict) -> dict[str, Any]:
     Returns:
         dict (cfg): Configuration dictionary to be passed to entry point.
     """
-    cfg = DEFAULTS.copy()
-    cfg.update(match_config)
-    return cfg
+    return MatchConfig(**match_config)
 
 
 def file_suffix(file_path: Path):

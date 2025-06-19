@@ -3,11 +3,11 @@
 import copy
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Optional
 
 import pandas as pd
 
-from osmatching.utils import write_output_file
+from osmatching.utils import MatchConfig, write_output_file
 
 
 NOT_PREVIOUSLY_MATCHED = -9
@@ -16,14 +16,12 @@ NOT_PREVIOUSLY_MATCHED = -9
 def import_data(
     cases: pd.DataFrame,
     matches: pd.DataFrame,
-    match_variables: dict,
-    date_exclusion_variables: Optional[dict[Any, Any]],
-    index_date_variable: str,
+    match_config: MatchConfig,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Sets the correct data types for the matching variables.
     """
-
+    match_variables = copy.deepcopy(match_config.match_variables)
     ## Set data types for matching variables
     month_only = []
     for var, match_type in match_variables.items():
@@ -47,21 +45,26 @@ def import_data(
         del match_variables[var]
         match_variables[f"{var}_m"] = "category"
 
+    match_config.match_variables = match_variables
+
     ## Format exclusion variables as dates
-    if date_exclusion_variables is not None:
-        for var in date_exclusion_variables:
-            cases[var] = pd.to_datetime(cases[var])
-            matches[var] = pd.to_datetime(matches[var])
+    for var in match_config.date_exclusion_variables:
+        cases[var] = pd.to_datetime(cases[var])
+        matches[var] = pd.to_datetime(matches[var])
 
     ## Format index date as date
-    cases[index_date_variable] = pd.to_datetime(cases[index_date_variable])
-    matches[index_date_variable] = pd.to_datetime(matches[index_date_variable])
+    cases[match_config.index_date_variable] = pd.to_datetime(
+        cases[match_config.index_date_variable]
+    )
+    matches[match_config.index_date_variable] = pd.to_datetime(
+        matches[match_config.index_date_variable]
+    )
 
     return cases, matches
 
 
 def add_variables(
-    cases: pd.DataFrame, matches: pd.DataFrame, indicator_variable_name: str = "case"
+    cases: pd.DataFrame, matches: pd.DataFrame, indicator_variable_name: str
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Adds the following variables to the case and match tables:
@@ -162,7 +165,7 @@ def greedily_pick_matches(
     matches_per_case: int,
     matched_rows: pd.DataFrame,
     case_row: pd.DataFrame,
-    closest_match_variables: Union[None, list] = None,
+    closest_match_variables: list,
 ) -> pd.Index:
     """
     Cuts the eligible_matches list to the number of matches specified. This is a
@@ -171,7 +174,7 @@ def greedily_pick_matches(
     specified). If there are more than matches_per_case matches who are identical,
     matches are randomly sampled.
     """
-    if closest_match_variables is not None:
+    if closest_match_variables:
         sort_cols: list = []
         for var in closest_match_variables:
             matched_rows[f"{var}_delta"] = abs(matched_rows[var] - case_row[var])
@@ -208,18 +211,7 @@ def get_date_offset(offset_str: str) -> Optional[pd.DataFrame]:
 def match(
     case_df: str,
     match_df: str,
-    matches_per_case: int,
-    match_variables: dict,
-    index_date_variable: str,
-    closest_match_variables: Optional[list[Any]] = None,
-    date_exclusion_variables: Optional[dict[Any, Any]] = None,
-    min_matches_per_case: int = 0,
-    replace_match_index_date_with_case: Optional[str] = None,
-    indicator_variable_name: str = "case",
-    output_path: Union[Path, str] = Path("output"),
-    output_suffix: str = "",
-    drop_cases_from_matches: bool = False,
-    output_format: str = "arrow",
+    match_config: MatchConfig,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Wrapper function that calls functions to:
@@ -233,14 +225,15 @@ def match(
     - set the index date of the match as that of the case (where desired)
     - save the results in the specified output format
     """
-    if min_matches_per_case > matches_per_case:
+
+    if match_config.min_matches_per_case > match_config.matches_per_case:
         raise ValueError("min_matches_per_case cannot be greater than matches_per_case")
 
     # Make sure the output path is a Path and it exists
-    output_path = Path(output_path)
+    output_path = Path(match_config.output_path)
     output_path.mkdir(parents=True, exist_ok=True)
 
-    report_path = output_path / f"matching_report{output_suffix}.txt"
+    report_path = output_path / f"matching_report{match_config.output_suffix}.txt"
 
     def matching_report(text_list: list, erase: bool = False) -> None:
         if erase and report_path.is_file():
@@ -257,16 +250,12 @@ def match(
         erase=True,
     )
 
-    ## Deep copy match_variables
-    match_variables = copy.deepcopy(match_variables)
-
-    ## Import_data
+    # Import_data; note match_config.match_variables may be updated with date variables that
+    # are converted to month-only
     cases, matches = import_data(
         case_df,
         match_df,
-        match_variables,
-        date_exclusion_variables,
-        index_date_variable,
+        match_config,
     )
 
     matching_report(
@@ -279,7 +268,7 @@ def match(
     )
 
     ## Drop cases from match population if specified
-    if drop_cases_from_matches:
+    if match_config.drop_cases_from_matches:
         matches = matches.drop(cases.index, errors="ignore")
 
     matching_report(
@@ -292,18 +281,20 @@ def match(
     )
 
     ## Add set_id variable
-    cases, matches = add_variables(cases, matches, indicator_variable_name)
+    cases, matches = add_variables(cases, matches, match_config.indicator_variable_name)
 
-    indices = pre_calculate_indices(cases, matches, match_variables)
+    indices = pre_calculate_indices(cases, matches, match_config.match_variables)
     matching_report([f"Completed pre-calculating indices at {datetime.now()}"])
 
-    if replace_match_index_date_with_case is not None:
-        offset_str = replace_match_index_date_with_case
-        date_offset = get_date_offset(replace_match_index_date_with_case)
+    if match_config.replace_match_index_date_with_case:
+        offset_str = match_config.replace_match_index_date_with_case
+        date_offset = get_date_offset(offset_str)
 
-    if date_exclusion_variables is not None:
+    if match_config.date_exclusion_variables:
         case_exclusions = date_exclusions(
-            cases, date_exclusion_variables, cases[index_date_variable]
+            cases,
+            match_config.date_exclusion_variables,
+            cases[match_config.index_date_variable],
         )
         cases = cases.loc[~case_exclusions]
         matching_report(
@@ -316,61 +307,63 @@ def match(
         )
 
     ## Sort cases by index date
-    cases = cases.sort_values(index_date_variable)
+    cases = cases.sort_values(match_config.index_date_variable)
 
     for case_id, case_row in cases.iterrows():
         ## Get eligible matches
         eligible_matches = get_eligible_matches(
-            case_row, matches, match_variables, indices
+            case_row, matches, match_config.match_variables, indices
         )
         matched_rows = matches.loc[eligible_matches]
 
         ## Determine match index date
-        if replace_match_index_date_with_case is None:
-            index_date = matched_rows[index_date_variable]
+        if not match_config.replace_match_index_date_with_case:
+            index_date = matched_rows[match_config.index_date_variable]
         else:
             if offset_str == "no_offset":
-                index_date = case_row[index_date_variable]
+                index_date = case_row[match_config.index_date_variable]
             elif offset_str.split("_")[2] == "earlier":
-                index_date = case_row[index_date_variable] - date_offset
+                index_date = case_row[match_config.index_date_variable] - date_offset
             elif offset_str.split("_")[2] == "later":
-                index_date = case_row[index_date_variable] + date_offset
+                index_date = case_row[match_config.index_date_variable] + date_offset
             else:
                 raise Exception(f"Date offset type '{offset_str}' not recognised")
 
         ## Index date based match exclusions (faster to do this after get_eligible_matches)
-        if date_exclusion_variables is not None:
+        if match_config.date_exclusion_variables:
             exclusions = date_exclusions(
-                matched_rows, date_exclusion_variables, index_date
+                matched_rows, match_config.date_exclusion_variables, index_date
             )
             matched_rows = matched_rows.loc[~exclusions]
 
         ## Pick random matches
         matched_rows = greedily_pick_matches(
-            matches_per_case,
+            match_config.matches_per_case,
             matched_rows,
             case_row,
-            closest_match_variables,
+            match_config.closest_match_variables,
         )
 
         ## Report number of matches for each case
         num_matches = len(matched_rows)
         cases.loc[case_id, "match_counts"] = num_matches
         ## Label matches with case ID if there are enough
-        if num_matches >= min_matches_per_case:
+        if num_matches >= match_config.min_matches_per_case:
             matches.loc[matched_rows, "set_id"] = case_id
 
         ## Set index_date of the match where needed
-        if replace_match_index_date_with_case is not None:
-            matches.loc[matched_rows, index_date_variable] = index_date
+        if match_config.replace_match_index_date_with_case:
+            matches.loc[matched_rows, match_config.index_date_variable] = index_date
 
     ## Drop unmatched cases/matches
-    matched_cases = cases.loc[cases["match_counts"] >= min_matches_per_case]
+    matched_cases = cases.loc[
+        cases["match_counts"] >= match_config.min_matches_per_case
+    ]
     matched_matches = matches.loc[matches["set_id"] != NOT_PREVIOUSLY_MATCHED]
 
     ## Describe population differences
     scalar_comparisons = compare_populations(
-        matched_cases, matched_matches, closest_match_variables
+        matched_cases, matched_matches, match_config.closest_match_variables
     )
 
     matching_report(
@@ -386,16 +379,13 @@ def match(
     )
 
     ## Write output files
+    file_suffix_ext = f"{match_config.output_suffix}.{match_config.output_format}"
+    write_output_file(matched_cases, output_path / f"matched_cases{file_suffix_ext}")
     write_output_file(
-        matched_cases, output_path / f"matched_cases{output_suffix}.{output_format}"
-    )
-    write_output_file(
-        matched_matches, output_path / f"matched_matches{output_suffix}.{output_format}"
+        matched_matches, output_path / f"matched_matches{file_suffix_ext}"
     )
     combined = pd.concat([matched_cases, matched_matches])
-    write_output_file(
-        combined, output_path / f"matched_combined{output_suffix}.{output_format}"
-    )
+    write_output_file(combined, output_path / f"matched_combined{file_suffix_ext}")
 
     # return the matched dataframes, for ease of testing
     return matched_cases, matched_matches
@@ -404,7 +394,7 @@ def match(
 def compare_populations(
     matched_cases: pd.DataFrame,
     matched_matches: pd.DataFrame,
-    closest_match_variables: Optional[list[Any]],
+    closest_match_variables: list,
 ) -> pd.DataFrame:
     """
     Takes the list of closest_match_variables and describes each of them for the matched
@@ -414,15 +404,14 @@ def compare_populations(
     specified.
     """
     scalar_comparisons = []
-    if closest_match_variables is not None:
-        for var in closest_match_variables:
-            scalar_comparisons.extend(
-                [
-                    f"\n{var} comparison:",
-                    "Cases:",
-                    matched_cases[var].describe().to_string(),
-                    "Matches:",
-                    matched_matches[var].describe().to_string(),
-                ]
-            )
+    for var in closest_match_variables:
+        scalar_comparisons.extend(
+            [
+                f"\n{var} comparison:",
+                "Cases:",
+                matched_cases[var].describe().to_string(),
+                "Matches:",
+                matched_matches[var].describe().to_string(),
+            ]
+        )
     return scalar_comparisons

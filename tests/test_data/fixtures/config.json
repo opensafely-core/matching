@@ -5,8 +5,8 @@
     "age": 5,
     "indexdate": "month_only"
   },
-  "index_variable": "indexdate",
-  "closest_match_columns": [
+  "index_date_variable": "indexdate",
+  "closest_match_variables": [
     "age"
   ],
   "output_path": "tests/test_output/",

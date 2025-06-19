@@ -85,7 +85,7 @@ where `config.json` is a file containing additional arguments to `match()`:
     "sex": "category",
     "age": 5
   },
-  "index_variable": "indexdate"
+  "index_date_variable": "indexdate"
 }
 ```
 
@@ -94,7 +94,7 @@ Alternatively, pass config on the command line as a json string:
 match \
   --cases input_cases.arrow \
   --controls input_matches.arrow \
-  --config '{"matches_per_case": 3, "match_variables": {"sex": "category", "age": 5}, "index_variable": "indexdate"}'
+  --config '{"matches_per_case": 3, "match_variables": {"sex": "category", "age": 5}, "index_date_variable": "indexdate"}'
 ```
 
 ### Required arguments
@@ -121,16 +121,16 @@ A string variable (format: "YYYY-MM-DD") relating to the index date for each cas
 
 ### Optional arguments
 
-`closest_match_variables`(default: `None`)\
+`closest_match_variables`(default: `[]`)\
 A Python list (e.g `["age", "months_since_diagnosis"]`) containing variables that you want to find the closest match on. The order given in the list determines the priority of sorting (first is highest priority).
 
-`date_exclusion_variables`(default: `None`)\
+`date_exclusion_variables`(default: `{}`)\
 A Python dictionary containing a list of date variables (as keys) to use to exclude patients, relative to the index date. Patients who have a date in the specified variable either `"before"` or `"after"` the index date are excluded. `"before"` or `"after"` is indicated by the values in the dictionary for each variable.
 
 `min_matches_per_case` (default: 0)\
 An integer that determines the minimum number of acceptable matches for each case. Sets of cases and matches where there are fewer than the specified number are dropped from the output data.
 
-`replace_match_index_date_with_case` (default: `None`)\
+`replace_match_index_date_with_case` (default: `""`)\
 When using for example a general population control, the match patients may not have an index date - meaning you want to pass the date from the case/exposed patient. This can be:
 - the exact same date as the case - specified by `"no_offset"`
 - with an offset in the format: `"n_unit_direction"`, where:
@@ -237,28 +237,32 @@ Match COVID population to pneumonia population with:
  - excluding patients who died or had various outcomes before their index date
 ```py
 from osmatching import match
-from osmatching.utils import load_dataframe
+from osmatching.utils import load_dataframe, load_config
 
 match(
     case_df=load_dataframe("input_covid.csv.gz"),
     match_df=load_dataframe("input_pneumonia.csv.gz"),
-    matches_per_case=1,
-    match_variables={
-        "sex": "category",
-        "age": 1,
-        "stp": "category",
-        "indexdate": "month_only",
-    },
-    index_date_variable="indexdate",
-    closest_match_variables=["age"],
-    date_exclusion_variables={
-        "died_date_ons": "before",
-        "previous_vte_gp": "before",
-        "previous_vte_hospital": "before",
-        "previous_stroke_gp": "before",
-        "previous_stroke_hospital": "before",
-    },
-    output_suffix="_pneumonia",
+    load_config(
+        dict(
+            matches_per_case=1,
+            match_variables={
+                "sex": "category",
+                "age": 1,
+                "stp": "category",
+                "indexdate": "month_only",
+            },
+            index_date_variable="indexdate",
+            closest_match_variables=["age"],
+            date_exclusion_variables={
+                "died_date_ons": "before",
+                "previous_vte_gp": "before",
+                "previous_vte_hospital": "before",
+                "previous_stroke_gp": "before",
+                "previous_stroke_hospital": "before",
+            },
+            output_suffix="_pneumonia",
+        )
+    )
 )
 ```
 **Outputs:**\
@@ -277,29 +281,33 @@ Match COVID population to general population from 2019 with:
  - case/match groups where there isn't at least one match are excluded
 ```py
 from osmatching import match
-from osmatching.utils import load_dataframe
+from osmatching.utils import load_dataframe, load_config
 
 match(
     case_df=load_dataframe("input_covid.csv.gz"),
     match_df=load_dataframe("input_control_2019.csv.gz"),
-    matches_per_case=2,
-    match_variables={
-        "sex": "category",
-        "age": 1,
-        "stp": "category",
-    },
-    index_date_variable="indexdate",
-    closest_match_variables=["age"],
-    min_matches_per_case=1,
-    replace_match_index_date_with_case="1_year_earlier",
-    date_exclusion_variables={
-        "died_date_ons": "before",
-        "previous_vte_gp": "before",
-        "previous_vte_hospital": "before",
-        "previous_stroke_gp": "before",
-        "previous_stroke_hospital": "before",
-    },
-    output_suffix="_control_2019",
+    match_config=load_config(
+        dict(
+            matches_per_case=2,
+            match_variables={
+                "sex": "category",
+                "age": 1,
+                "stp": "category",
+            },
+            index_date_variable="indexdate",
+            closest_match_variables=["age"],
+            min_matches_per_case=1,
+            replace_match_index_date_with_case="1_year_earlier",
+            date_exclusion_variables={
+                "died_date_ons": "before",
+                "previous_vte_gp": "before",
+                "previous_vte_hospital": "before",
+                "previous_stroke_gp": "before",
+                "previous_stroke_hospital": "before",
+            },
+            output_suffix="_control_2019",
+        )
+    )
 )
 ```
 **Outputs:**\
@@ -316,28 +324,32 @@ Match COVID population to general population from 2020 with:
  - greedy matching on age 
  - excluding patients who died or had various outcomes before their index date
 ```py
-from osmatching.utils import load_dataframe
+from osmatching.utils import load_dataframe, load_config
 
 match(
     case_df=load_dataframe("input_covid.csv.gz"),
     match_df=load_dataframe("input_control_2020.csv.gz"),
-    matches_per_case=2,
-    match_variables={
-        "sex": "category",
-        "age": 1,
-        "stp": "category",
-    },
-    closest_match_variables=["age"],
-    replace_match_index_date_with_case="no_offset",
-    index_date_variable="indexdate",
-    date_exclusion_variables={
-        "died_date_ons": "before",
-        "previous_vte_gp": "before",
-        "previous_vte_hospital": "before",
-        "previous_stroke_gp": "before",
-        "previous_stroke_hospital": "before",
-    },
-    output_suffix="_control_2020",
+    match_config=load_config(
+        dict(
+            matches_per_case=2,
+            match_variables={
+                "sex": "category",
+                "age": 1,
+                "stp": "category",
+            },
+            closest_match_variables=["age"],
+            replace_match_index_date_with_case="no_offset",
+            index_date_variable="indexdate",
+            date_exclusion_variables={
+                "died_date_ons": "before",
+                "previous_vte_gp": "before",
+                "previous_vte_hospital": "before",
+                "previous_stroke_gp": "before",
+                "previous_stroke_hospital": "before",
+            },
+            output_suffix="_control_2020",
+        )
+    )
 )
 ```
 **Outputs:**\
