@@ -18,6 +18,11 @@ def validate_required_vars(config):
             yield var
 
 
+def replace_none_with_default(config, name, default):
+    if getattr(config, name) is None:
+        setattr(config, name, default)
+
+
 def parse_and_validate_config(config: "MatchConfig"):
     """
     Validate config values where possible in advance of any calculations
@@ -38,5 +43,9 @@ def parse_and_validate_config(config: "MatchConfig"):
         errors["min_matches_per_case"].append(
             f"`min_matches_per_case` ({config.min_matches_per_case}) cannot be greater than `matches_per_case` ({config.matches_per_case})"
         )
+
+    # ensure we don't have None values where we expect empty lists/dicts
+    replace_none_with_default(config, "closest_match_variables", [])
+    replace_none_with_default(config, "date_exclusion_variables", {})
 
     return config, errors

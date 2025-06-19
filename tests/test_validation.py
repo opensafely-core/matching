@@ -71,3 +71,13 @@ def test_missing_required_vars(config_vars, error_keys):
     config = MatchConfig(**config_vars)
     config, errors = parse_and_validate_config(config)
     assert list(errors.keys()) == error_keys
+
+
+def test_replace_none_with_default():
+    config = get_match_config(
+        {"date_exclusion_variables": None, "closest_match_variables": None}
+    )
+    config, errors = parse_and_validate_config(config)
+    assert errors == {}
+    assert config.date_exclusion_variables == {}
+    assert config.closest_match_variables == []
