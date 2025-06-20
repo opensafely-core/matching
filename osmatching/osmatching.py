@@ -21,6 +21,7 @@ def import_data(
     """
     Sets the correct data types for the matching variables.
     """
+    assert match_config.match_variables is not None  # guaranteed by validation
     match_variables = copy.deepcopy(match_config.match_variables)
     ## Set data types for matching variables
     month_only = []
@@ -223,6 +224,10 @@ def match(
         if errors:
             report_config_errors(errors)
             raise ValueError("There was an error in one or more config values")
+
+    # Guaranteed by validation; assert not None to satisfy mypy
+    assert match_config.match_variables is not None
+    assert match_config.matches_per_case is not None
 
     # Make sure the output path exists
     match_config.output_path.mkdir(parents=True, exist_ok=True)
