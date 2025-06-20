@@ -139,6 +139,9 @@ When using for example a general population control, the match patients may not 
   - `direction` is `earlier` or `later`
   - For example: `1_year_earlier`.
 
+Note: if the matches dataset does not have a column with the `index_date_variable` name, it will be
+created, and populated with the date generated from the matched case. If the matches dataset does have
+an `index_date_variable` column, it will be overwritten in the output dataset.
 
 `indicator_variable_name` (default: `"case"`)\
 A binary variable (`0` or `1`) is included in the output data to indicate whether each patient is a "case" or "match". The default is set to fit the nomenclature of a case control study, but this might be changed to for example `"exposed"` to fit better with a cohort study.
