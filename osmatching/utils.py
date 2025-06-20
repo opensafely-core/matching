@@ -18,10 +18,23 @@ class MatchConfig:
     replace_match_index_date_with_case: str = ""
     output_suffix: str = ""
     indicator_variable_name: str = "case"
-    output_path: str = "output"
+    output_path: Path = Path("output")
     drop_cases_from_matches: bool = False
     output_format: str = "arrow"
 
+    @classmethod
+    def from_dict(cls, config_dict):
+        output_path = Path(config_dict.pop("output_path", None) or "output")
+        closest_match_variables = config_dict.pop("closest_match_variables", None) or []
+        date_exclusion_variables = (
+            config_dict.pop("date_exclusion_variables", None) or {}
+        )
+        return cls(
+            **config_dict,
+            output_path=output_path,
+            closest_match_variables=closest_match_variables,
+            date_exclusion_variables=date_exclusion_variables,
+        )
 
 DATAFRAME_READER: dict[str, tuple] = {
     ".csv": ("read_csv", {"engine": "pyarrow"}),
@@ -42,7 +55,7 @@ def load_config(match_config: dict) -> MatchConfig:
     Returns:
         MatchConfig: Configuration instance to be passed to entry point.
     """
-    return parse_and_validate_config(MatchConfig(**match_config))
+    return parse_and_validate_config(MatchConfig.from_dict(match_config))
 
 
 def file_suffix(file_path: Path):
