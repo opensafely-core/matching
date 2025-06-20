@@ -215,7 +215,7 @@ def test_match_drop_cases(tmp_path, drop_cases_from_matches):
         ("2_years_earlier", datetime(2018, 7, 29)),
     ],
 )
-def test_replace_match_index_date_with_case(tmp_path, offset, expected_indexdate):
+def test_generate_match_index_date(tmp_path, offset, expected_indexdate):
     test_matching = {
         "matches_per_case": 1,
         "match_variables": {
@@ -228,7 +228,7 @@ def test_replace_match_index_date_with_case(tmp_path, offset, expected_indexdate
         "index_date_variable": "indexdate",
         "output_path": tmp_path,
         "drop_cases_from_matches": True,
-        "replace_match_index_date_with_case": offset,
+        "generate_match_index_date": offset,
     }
 
     case_df = load_dataframe(FIXTURE_PATH / "input_cases.csv")
@@ -242,7 +242,7 @@ def test_replace_match_index_date_with_case(tmp_path, offset, expected_indexdate
     assert matched_matches.iloc[0].indexdate == expected_indexdate
 
 
-def test_replace_match_index_date_offset_error(tmp_path):
+def test_generate_match_index_date_offset_error(tmp_path):
     test_matching = {
         "matches_per_case": 1,
         "match_variables": {
@@ -254,7 +254,7 @@ def test_replace_match_index_date_offset_error(tmp_path):
         "closest_match_variables": ["age"],
         "index_date_variable": "indexdate",
         "drop_cases_from_matches": True,
-        "replace_match_index_date_with_case": "1_day_before",
+        "generate_match_index_date": "1_day_before",
         "output_path": tmp_path,
     }
 

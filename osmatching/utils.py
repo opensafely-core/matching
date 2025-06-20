@@ -15,7 +15,7 @@ class MatchConfig:
     closest_match_variables: list[str] = field(default_factory=list)
     date_exclusion_variables: dict[Any, Any] = field(default_factory=dict)
     min_matches_per_case: int = 0
-    replace_match_index_date_with_case: str = ""
+    generate_match_index_date: str = ""
     output_suffix: str = ""
     indicator_variable_name: str = "case"
     output_path: Path = Path("output")

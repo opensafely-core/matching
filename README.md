@@ -130,8 +130,8 @@ A Python dictionary containing a list of date variables (as keys) to use to excl
 `min_matches_per_case` (default: 0)\
 An integer that determines the minimum number of acceptable matches for each case. Sets of cases and matches where there are fewer than the specified number are dropped from the output data.
 
-`replace_match_index_date_with_case` (default: `""`)\
-When using for example a general population control, the match patients may not have an index date - meaning you want to pass the date from the case/exposed patient. This can be:
+`generate_match_index_date` (default: `""`)\
+When using for example a general population control, the match patients may not have an index date - meaning you want to generate the date for the matched patient from the case/exposed patient. This can be:
 - the exact same date as the case - specified by `"no_offset"`
 - with an offset in the format: `"n_unit_direction"`, where:
   - `n` is an integer number
@@ -297,7 +297,7 @@ match(
             index_date_variable="indexdate",
             closest_match_variables=["age"],
             min_matches_per_case=1,
-            replace_match_index_date_with_case="1_year_earlier",
+            generate_match_index_date="1_year_earlier",
             date_exclusion_variables={
                 "died_date_ons": "before",
                 "previous_vte_gp": "before",
@@ -338,7 +338,7 @@ match(
                 "stp": "category",
             },
             closest_match_variables=["age"],
-            replace_match_index_date_with_case="no_offset",
+            generate_match_index_date="no_offset",
             index_date_variable="indexdate",
             date_exclusion_variables={
                 "died_date_ons": "before",

@@ -185,7 +185,7 @@ def greedily_pick_matches(
 
 def get_date_offset(offset_str: str) -> Optional[pd.DataFrame]:
     """
-    Parses the string given by replace_match_index_date_with_case
+    Parses the string given by generate_match_index_date
     to determine the unit and length of offset.
     Returns a pr.DateOffset of the appropriate length.
     """
@@ -281,8 +281,8 @@ def match(
     indices = pre_calculate_indices(cases, matches, match_config.match_variables)
     matching_report([f"Completed pre-calculating indices at {datetime.now()}"])
 
-    if match_config.replace_match_index_date_with_case:
-        offset_str = match_config.replace_match_index_date_with_case
+    if match_config.generate_match_index_date:
+        offset_str = match_config.generate_match_index_date
         date_offset = get_date_offset(offset_str)
 
     if match_config.date_exclusion_variables:
@@ -312,7 +312,7 @@ def match(
         matched_rows = matches.loc[eligible_matches]
 
         ## Determine match index date
-        if not match_config.replace_match_index_date_with_case:
+        if not match_config.generate_match_index_date:
             index_date = matched_rows[match_config.index_date_variable]
         else:
             if offset_str == "no_offset":
@@ -347,7 +347,7 @@ def match(
             matches.loc[matched_rows, "set_id"] = case_id
 
         ## Set index_date of the match where needed
-        if match_config.replace_match_index_date_with_case:
+        if match_config.generate_match_index_date:
             matches.loc[matched_rows, match_config.index_date_variable] = index_date
 
     ## Drop unmatched cases/matches
