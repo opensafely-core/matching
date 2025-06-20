@@ -6,7 +6,13 @@ import sys
 from pathlib import Path
 
 from osmatching.osmatching import match
-from osmatching.utils import MatchConfig, file_suffix, load_config, load_dataframe
+from osmatching.utils import (
+    MatchConfig,
+    file_suffix,
+    load_config,
+    load_dataframe,
+    report_config_errors,
+)
 
 
 class LoadMatchingConfig(argparse.Action):
@@ -24,12 +30,7 @@ class LoadMatchingConfig(argparse.Action):
 
         config, errors = load_config(config)
         if errors:
-            print("\nErrors were found in the provided configuration:")
-            for key, errorlist in errors.items():
-                print(f"\n  {key}")
-                for error in errorlist:
-                    print(f"  * {error}")
-            print("\nPlease correct these errors and try again")
+            report_config_errors(errors)
             sys.exit(2)
         setattr(namespace, self.dest, config)
 

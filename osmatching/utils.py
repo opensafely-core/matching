@@ -83,3 +83,12 @@ def write_output_file(df, file_path):
     # feather requires that we reset the index before writing
     writer = getattr(df.reset_index(), DATAFRAME_WRITER[suffix])
     writer(file_path)
+
+
+def report_config_errors(errors):
+    print("\nErrors were found in the provided configuration:")
+    for key, errorlist in errors.items():
+        print(f"\n  {key}")
+        for error in errorlist:
+            print(f"  * {error}")
+    print("\nPlease correct these errors and try again")
