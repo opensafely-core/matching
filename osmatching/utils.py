@@ -16,6 +16,7 @@ class MatchConfig:
     date_exclusion_variables: dict[Any, Any] = field(default_factory=dict)
     min_matches_per_case: int = 0
     generate_match_index_date: str = ""
+    match_index_date_offset: tuple[str, str, int] | None = None
     output_suffix: str = ""
     indicator_variable_name: str = "case"
     output_path: Path = Path("output")

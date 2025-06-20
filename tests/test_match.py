@@ -14,7 +14,7 @@ from osmatching.osmatching import (
     match,
     pre_calculate_indices,
 )
-from osmatching.utils import MatchConfig, load_dataframe
+from osmatching.utils import MatchConfig, load_dataframe, parse_and_validate_config
 
 
 FIXTURE_PATH = Path(__file__).parent / "test_data" / "fixtures"
@@ -233,41 +233,12 @@ def test_generate_match_index_date(tmp_path, offset, expected_indexdate):
 
     case_df = load_dataframe(FIXTURE_PATH / "input_cases.csv")
     match_df = load_dataframe(FIXTURE_PATH / "input_controls.csv")
-    _, matched_matches = match(
-        case_df,
-        match_df,
-        match_config=MatchConfig(**test_matching),
-    )
+    config = MatchConfig(**test_matching)
+    config, errors = parse_and_validate_config(config)
+    assert errors == {}
+    _, matched_matches = match(case_df, match_df, match_config=config)
 
     assert matched_matches.iloc[0].indexdate == expected_indexdate
-
-
-def test_generate_match_index_date_offset_error(tmp_path):
-    test_matching = {
-        "matches_per_case": 1,
-        "match_variables": {
-            "sex": "category",
-            "age": 1,
-            "region": "category",
-            "indexdate": "month_only",
-        },
-        "closest_match_variables": ["age"],
-        "index_date_variable": "indexdate",
-        "drop_cases_from_matches": True,
-        "generate_match_index_date": "1_day_before",
-        "output_path": tmp_path,
-    }
-
-    case_df = load_dataframe(FIXTURE_PATH / "input_cases.csv")
-    match_df = load_dataframe(FIXTURE_PATH / "input_controls.csv")
-    with pytest.raises(
-        Exception, match="Date offset type '1_day_before' not recognised"
-    ):
-        match(
-            case_df,
-            match_df,
-            match_config=MatchConfig(**test_matching),
-        )
 
 
 def test_no_control_index_date(tmp_path):
@@ -291,10 +262,11 @@ def test_no_control_index_date(tmp_path):
         [[4, "F"], [5, "M"], [6, "F"], [7, "M"], [8, "F"]],
         columns=["patient_id", "sex"],
     )
+    config, _ = parse_and_validate_config(MatchConfig(**test_matching))
     _, matched_matches = match(
         case_df,
         match_df,
-        match_config=MatchConfig(**test_matching),
+        match_config=config,
     )
 
     # match index date is generated from the case
@@ -487,17 +459,12 @@ def test_get_date_offset():
     Tests that the pd.DateOffset produced by various combinations of input
     strings is correct.
     """
-    no_offset = get_date_offset("no_offset")
-    one_year_before = get_date_offset("1_year_before")
-    two_months_before = get_date_offset("2_months_before")
-    three_days_before = get_date_offset("3_days_before")
+    no_offset = get_date_offset(("no_offset", "", 0))
+    one_year_before = get_date_offset(("years", "before", 1))
+    two_months_before = get_date_offset(("months", "before", 2))
+    three_days_before = get_date_offset(("days", "before", 3))
 
     assert no_offset is None
     assert one_year_before == pd.DateOffset(years=1)
     assert two_months_before == pd.DateOffset(months=2)
     assert three_days_before == pd.DateOffset(days=3)
-
-
-def test_get_date_offset_invalid():
-    with pytest.raises(Exception, match="Date offset 'quarter' not implemented"):
-        get_date_offset("1_quarter_before")

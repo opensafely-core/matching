@@ -44,9 +44,34 @@ def validate_match_variables(match_variables):
             yield match_var, match_type
 
 
+def get_match_index_date_offset(offset_str):
+    match offset_str:
+        case "" | None:
+            return None
+        case "no_offset":
+            return ("no_offset", "", 0)
+        case _:
+            try:
+                length, unit, offset_type = offset_str.split("_")
+                length = int(length)
+            except ValueError:
+                raise ValueError(f"Date offset '{offset_str}' could not be parsed")
+
+            unit = unit.strip("s") + "s"
+            if unit not in ["years", "months", "days"]:
+                raise ValueError(f"Date offset units '{unit}' not implemented")
+
+            if offset_type not in ["earlier", "later"]:
+                raise ValueError(f"Date offset type '{offset_type}' not implemented")
+
+            return (unit, offset_type, length)
+
+
 def parse_and_validate_config(config: "MatchConfig"):
     """
     Validate config values where possible in advance of any calculations
+    and convert replace_match_index_date_with_case strings into component
+    args for later use.
     """
     # ensure output_path is a Path
     config.output_path = Path(config.output_path)
@@ -82,5 +107,14 @@ def parse_and_validate_config(config: "MatchConfig"):
         errors["match_variables"].append(
             f"Invalid match type '{invalid_type}' for variable `{match_var}`. Allowed are 'category', 'month_only', and integers."
         )
+
+    # validate offset units for replace_match_index_date_with_case
+    # and populate the match_index_date_offset tuple
+    try:
+        config.match_index_date_offset = get_match_index_date_offset(
+            config.generate_match_index_date
+        )
+    except ValueError as error:
+        errors["generate_match_index_date"] = [str(error)]
 
     return config, errors

@@ -187,26 +187,16 @@ def greedily_pick_matches(
     return matched_rows.index
 
 
-def get_date_offset(offset_str: str) -> Optional[pd.DataFrame]:
+def get_date_offset(offset: tuple[str, str, int]) -> Optional[pd.DataFrame]:
     """
-    Parses the string given by generate_match_index_date
-    to determine the unit and length of offset.
-    Returns a pr.DateOffset of the appropriate length.
+    Converts the tuple of unit and length given by match_index_date_offset
+    to return a pr.DateOffset of the appropriate length.
     """
-    if offset_str == "no_offset":
-        offset = None
+    unit, _, length = offset
+    if unit == "no_offset":
+        return None
     else:
-        length = int(offset_str.split("_")[0])
-        unit = offset_str.split("_")[1]
-        if unit in ("year", "years"):
-            offset = pd.DateOffset(years=length)
-        elif unit in ("month", "months"):
-            offset = pd.DateOffset(months=length)
-        elif unit in ("day", "days"):
-            offset = pd.DateOffset(days=length)
-        else:
-            raise Exception(f"Date offset '{unit}' not implemented")
-    return offset
+        return pd.DateOffset(**{unit: length})
 
 
 def match(
@@ -285,9 +275,8 @@ def match(
     indices = pre_calculate_indices(cases, matches, match_config.match_variables)
     matching_report([f"Completed pre-calculating indices at {datetime.now()}"])
 
-    if match_config.generate_match_index_date:
-        offset_str = match_config.generate_match_index_date
-        date_offset = get_date_offset(offset_str)
+    if match_config.match_index_date_offset:
+        date_offset = get_date_offset(match_config.match_index_date_offset)
 
     if match_config.date_exclusion_variables:
         case_exclusions = date_exclusions(
@@ -316,17 +305,19 @@ def match(
         matched_rows = matches.loc[eligible_matches]
 
         ## Determine match index date
-        if not match_config.generate_match_index_date:
+        if not match_config.match_index_date_offset:
             index_date = matched_rows[match_config.index_date_variable]
         else:
-            if offset_str == "no_offset":
+            unit, offset_type, _ = match_config.match_index_date_offset
+
+            if unit == "no_offset":
                 index_date = case_row[match_config.index_date_variable]
-            elif offset_str.split("_")[2] == "earlier":
+            elif offset_type == "earlier":
                 index_date = case_row[match_config.index_date_variable] - date_offset
-            elif offset_str.split("_")[2] == "later":
+            elif offset_type == "later":
                 index_date = case_row[match_config.index_date_variable] + date_offset
             else:
-                raise Exception(f"Date offset type '{offset_str}' not recognised")
+                assert False, f"Date offset type '{offset_type}' not recognised"
 
         ## Index date based match exclusions (faster to do this after get_eligible_matches)
         if match_config.date_exclusion_variables:

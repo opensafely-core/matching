@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from osmatching.utils import MatchConfig, parse_and_validate_config
+from osmatching.validation import get_match_index_date_offset
 
 
 CONFIG_DICT_DEFAULTS = {
@@ -124,3 +125,38 @@ def test_match_variables_types():
             "Invalid match type 'None' for variable `none`. Allowed are 'category', 'month_only', and integers.",
         ]
     }
+
+
+@pytest.mark.parametrize(
+    "offset_str, offset",
+    [
+        ("", None),
+        (None, None),
+        ("no_offset", ("no_offset", "", 0)),
+        ("1_day_earlier", ("days", "earlier", 1)),
+        ("4_days_later", ("days", "later", 4)),
+        ("2_month_earlier", ("months", "earlier", 2)),  # deliberate typo
+        ("4_months_later", ("months", "later", 4)),
+        ("2_years_earlier", ("years", "earlier", 2)),
+        ("1_year_later", ("years", "later", 1)),
+    ],
+)
+def test_get_match_index_date_offset(offset_str, offset):
+    assert get_match_index_date_offset(offset_str) == offset
+
+
+@pytest.mark.parametrize(
+    "offset_str,error",
+    [
+        ("1_year", "Date offset '1_year' could not be parsed"),
+        ("1 year earlier", "Date offset '1 year earlier' could not be parsed"),
+        ("1_quarters_earlier", "Date offset units 'quarters' not implemented"),
+        ("before_2_months", "Date offset 'before_2_months' could not be parsed"),
+        ("two_days_later", "Date offset 'two_days_later' could not be parsed"),
+        ("2_months_before", "Date offset type 'before' not implemented"),
+    ],
+)
+def test_generate_match_index_date_error(offset_str, error):
+    config = get_match_config({"generate_match_index_date": offset_str})
+    config, errors = parse_and_validate_config(config)
+    assert errors["generate_match_index_date"] == [error]
