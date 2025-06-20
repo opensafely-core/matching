@@ -90,12 +90,10 @@ def get_bool_index(
     according to the matching specification.
     """
     if match_type == "category":
-        bool_index = matches[match_var] == value
-    elif isinstance(match_type, int):
-        bool_index = abs(matches[match_var] - value) <= match_type
+        return matches[match_var] == value
     else:
-        raise Exception(f"Matching type '{match_type}' not yet implemented")
-    return bool_index
+        assert isinstance(match_type, int), "Unknown matching type '{match_type}'"
+        return abs(matches[match_var] - value) <= match_type
 
 
 def pre_calculate_indices(

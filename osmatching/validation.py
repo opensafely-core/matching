@@ -29,6 +29,21 @@ def validate_date_exclusions(date_exclusion_variables):
             yield exclusion_var, when
 
 
+def validate_match_variables(match_variables):
+    """
+    validate types for match variables - currently category or scalar (int) only
+    Note that month_only matches are converted to month categories
+    """
+    if match_variables is None:
+        return
+
+    for match_var, match_type in match_variables.items():
+        if match_type in ["category", "month_only"]:
+            continue
+        if not isinstance(match_type, int):
+            yield match_var, match_type
+
+
 def parse_and_validate_config(config: "MatchConfig"):
     """
     Validate config values where possible in advance of any calculations
@@ -60,6 +75,12 @@ def parse_and_validate_config(config: "MatchConfig"):
     ):
         errors["date_exclusion_variables"].append(
             f"Invalid exclusion type '{invalid_when}' for variable '{exclusion_var}'. Allowed types are 'before' or 'after'"
+        )
+
+    # Validate that match_variable are of allowed types
+    for match_var, invalid_type in validate_match_variables(config.match_variables):
+        errors["match_variables"].append(
+            f"Invalid match type '{invalid_type}' for variable `{match_var}`. Allowed are 'category', 'month_only', and integers."
         )
 
     return config, errors

@@ -100,3 +100,27 @@ def test_date_exclusions_invalid_type():
             "Invalid exclusion type 'on_or_after' for variable 'event_date'. Allowed types are 'before' or 'after'",
         ]
     }
+
+
+def test_match_variables_types():
+    config = get_match_config(
+        {
+            "match_variables": {
+                "died_date": "month_only",
+                "age": 5,
+                "sex": "category",
+                "negative": -4,
+                "region": "London",
+                "score": 1.5,
+                "none": None,
+            }
+        }
+    )
+    config, errors = parse_and_validate_config(config)
+    assert errors == {
+        "match_variables": [
+            "Invalid match type 'London' for variable `region`. Allowed are 'category', 'month_only', and integers.",
+            "Invalid match type '1.5' for variable `score`. Allowed are 'category', 'month_only', and integers.",
+            "Invalid match type 'None' for variable `none`. Allowed are 'category', 'month_only', and integers.",
+        ]
+    }

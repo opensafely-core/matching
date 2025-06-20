@@ -302,17 +302,6 @@ def test_scalar_get_bool_index():
     assert bool_index.equals(pd.Series([False, True, True, False, False]))
 
 
-def test_get_bool_index_unknown_match_tupe():
-    match_type = "foo"
-    value = 36
-    match_var = "value"
-    matches = pd.DataFrame.from_records(
-        [[30], [36], [39], [61], [75]], columns=["value"]
-    )
-    with pytest.raises(Exception, match="Matching type 'foo' not yet implemented"):
-        get_bool_index(match_type, value, match_var, matches)
-
-
 def test_pre_calculate_indices():
     """
     Test that the test_data booleans match with a predetermined series for a simple
