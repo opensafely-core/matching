@@ -117,4 +117,9 @@ def parse_and_validate_config(config: "MatchConfig"):
     except ValueError as error:
         errors["generate_match_index_date"] = [str(error)]
 
+    # Flag this config as validated. We expect that match() will only be called from the
+    # command line, which will always call this method to parse and validate the provided config
+    # dict. However, in the event that the module is used from a shell, we may need to check
+    # that it has been validated and re-validate if necessary.
+    config.validated = True
     return config, errors

@@ -157,12 +157,12 @@ def test_match_closest_match_variables_empty(tmp_path):
     pd.testing.assert_frame_equal(matched_matches_1, matched_matches_2)
 
     test_matching.update({"closest_match_variables": None})
-    with pytest.raises(TypeError):
-        match(
-            case_df=load_dataframe(FIXTURE_PATH / "input_cases.csv"),
-            match_df=load_dataframe(FIXTURE_PATH / "input_controls.csv"),
-            match_config=MatchConfig(**test_matching),
-        )
+    # None values are converted to [] during validation
+    match(
+        case_df=load_dataframe(FIXTURE_PATH / "input_cases.csv"),
+        match_df=load_dataframe(FIXTURE_PATH / "input_controls.csv"),
+        match_config=MatchConfig(**test_matching),
+    )
 
 
 @pytest.mark.parametrize("drop_cases_from_matches", [True, False])
@@ -468,3 +468,16 @@ def test_get_date_offset():
     assert one_year_before == pd.DateOffset(years=1)
     assert two_months_before == pd.DateOffset(months=2)
     assert three_days_before == pd.DateOffset(days=3)
+
+
+def test_match_with_config_errors():
+    cases = pd.DataFrame.from_records(
+        [{"patient_id": 1, "age": 36, "index_date": "2024-01-01"}]
+    )
+    matches = pd.DataFrame.from_records(
+        [{"patient_id": 2, "age": 30, "index_date": "2024-02-01"}]
+    )
+    with pytest.raises(
+        ValueError, match="There was an error in one or more config values"
+    ):
+        match(cases, matches, MatchConfig())

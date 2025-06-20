@@ -6,7 +6,8 @@ from typing import Optional
 
 import pandas as pd
 
-from osmatching.utils import MatchConfig, write_output_file
+from osmatching.utils import MatchConfig, report_config_errors, write_output_file
+from osmatching.validation import parse_and_validate_config
 
 
 NOT_PREVIOUSLY_MATCHED = -9
@@ -216,6 +217,12 @@ def match(
     - set the index date of the match as that of the case (where desired)
     - save the results in the specified output format
     """
+    # validate the config if we haven't already
+    if not match_config.validated:
+        match_config, errors = parse_and_validate_config(match_config)
+        if errors:
+            report_config_errors(errors)
+            raise ValueError("There was an error in one or more config values")
 
     # Make sure the output path exists
     match_config.output_path.mkdir(parents=True, exist_ok=True)

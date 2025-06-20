@@ -22,6 +22,7 @@ class MatchConfig:
     output_path: Path = Path("output")
     drop_cases_from_matches: bool = False
     output_format: str = "arrow"
+    validated: bool = False
 
     @classmethod
     def from_dict(cls, config_dict):

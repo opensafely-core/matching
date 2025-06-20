@@ -21,6 +21,11 @@ def get_match_config(test_config):
 def test_output_path():
     config = get_match_config({"output_path": "test_output"})
     assert isinstance(config.output_path, Path)
+    assert not config.validated
+
+    config, errors = parse_and_validate_config(config)
+    assert config.validated
+    assert errors == {}
 
 
 def test_defaults():
