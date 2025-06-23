@@ -181,6 +181,8 @@ def greedily_pick_matches(
     specified). If there are more than matches_per_case matches who are identical,
     matches are randomly sampled.
     """
+    # Ensure we're working with a copy of the matched_rows df
+    matched_rows = matched_rows.copy()
     if closest_match_variables:
         sort_cols: list = []
         for var in closest_match_variables:
@@ -397,7 +399,9 @@ def match(
     write_output_file(
         matched_matches, match_config.output_path / f"matched_matches{file_suffix_ext}"
     )
-    combined = pd.concat([matched_cases, matched_matches])
+    combined = pd.concat(
+        [df for df in [matched_cases, matched_matches] if not df.empty]
+    )
     write_output_file(
         combined, match_config.output_path / f"matched_combined{file_suffix_ext}"
     )
