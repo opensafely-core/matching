@@ -7,7 +7,7 @@ from typing import Optional
 import pandas as pd
 
 from osmatching.utils import MatchConfig, report_config_errors, write_output_file
-from osmatching.validation import parse_and_validate_config
+from osmatching.validation import parse_and_validate_config, validate_input_data
 
 
 NOT_PREVIOUSLY_MATCHED = -9
@@ -224,6 +224,11 @@ def match(
         if errors:
             report_config_errors(errors)
             raise ValueError("There was an error in one or more config values")
+
+    errors = validate_input_data(case_df, match_df, match_config)
+    if errors:
+        report_config_errors(errors)
+        raise ValueError("Errors encountered in the input datasets")
 
     # Guaranteed by validation; assert not None to satisfy mypy
     assert match_config.match_variables is not None

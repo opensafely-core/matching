@@ -2,6 +2,8 @@ from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import pandas as pd
+
 
 if TYPE_CHECKING:  # pragma: no cover
     # We are avoiding circular dependencies by using forward references for
@@ -123,3 +125,62 @@ def parse_and_validate_config(config: "MatchConfig"):
     # that it has been validated and re-validate if necessary.
     config.validated = True
     return config, errors
+
+
+def validate_input_data(
+    cases_df: pd.DataFrame, matches_df: pd.DataFrame, config: "MatchConfig"
+):
+    """
+    Perfom some basic checks on the input dataframes before we start the calculations.
+    These checks just ensure that we have the appropriate columns present in the two
+    datasets. We don't yet perform any column type validation here.
+
+    1) config.index_date_variable must be a column in cases_df
+    2) config.index_date_variable must be present in matches_df *unless*
+       config.generate_match_index_date is specified
+    3) Any matching variables specified (excluding index_date_variable) must be present
+       in both datasets, that is, any variables in:
+       - match_variables.keys()
+       - closest_match_variables
+       - date_exclusion_variables.keys()
+    """
+    errors = defaultdict(list)
+
+    if config.index_date_variable not in cases_df.columns:
+        errors["index_date_variable"].append(
+            f"column `{config.index_date_variable}` not found in cases dataset"
+        )
+
+    if (
+        not config.generate_match_index_date
+        and config.index_date_variable not in matches_df.columns
+    ):
+        errors["index_date_variable"].append(
+            f"column `{config.index_date_variable}` not found in matches dataset (required when `generate_match_index_date` is not specified)"
+        )
+
+    # Explicit empty set for match_variables because it has a None default
+    match_variables = set(config.match_variables) if config.match_variables else set()
+    # required columns are any of those in match_variables, closest_match_variables and
+    # date_exclusion_variables
+    required_columns = match_variables.union(
+        set(config.closest_match_variables), set(config.date_exclusion_variables)
+    ) - {config.index_date_variable}
+
+    def format_missing_columns(df):
+        missing = required_columns - set(df.columns)
+        if missing:
+            return ", ".join([f"`{col}`" for col in sorted(missing)])
+
+    columns_missing_from_cases = format_missing_columns(cases_df)
+    if columns_missing_from_cases:
+        errors["required_columns"].append(
+            f"column(s) {columns_missing_from_cases} not found in cases dataset"
+        )
+    columns_missing_from_matches = format_missing_columns(matches_df)
+    if columns_missing_from_matches:
+        errors["required_columns"].append(
+            f"column(s) {columns_missing_from_matches} not found in matches dataset"
+        )
+
+    return errors

@@ -1,9 +1,10 @@
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 from osmatching.utils import MatchConfig, parse_and_validate_config
-from osmatching.validation import get_match_index_date_offset
+from osmatching.validation import get_match_index_date_offset, validate_input_data
 
 
 CONFIG_DICT_DEFAULTS = {
@@ -165,3 +166,48 @@ def test_generate_match_index_date_error(offset_str, error):
     config = get_match_config({"generate_match_index_date": offset_str})
     config, errors = parse_and_validate_config(config)
     assert errors["generate_match_index_date"] == [error]
+
+
+def test_validate_input_data_missing_index_date():
+    config = get_match_config({})
+    # we require index_date and age columns
+    cases = pd.DataFrame.from_records([{"age": 36}])
+    matches = pd.DataFrame.from_records([{"age": 30}])
+    errors = validate_input_data(cases, matches, config)
+    assert errors == {
+        "index_date_variable": [
+            "column `index_date` not found in cases dataset",
+            "column `index_date` not found in matches dataset (required when `generate_match_index_date` is not specified)",
+        ]
+    }
+
+    config.generate_match_index_date = "no_offset"
+    errors = validate_input_data(cases, matches, config)
+    assert errors == {
+        "index_date_variable": [
+            "column `index_date` not found in cases dataset",
+        ]
+    }
+
+
+def test_validate_input_data_required_columns():
+    config = get_match_config(
+        {
+            "match_variables": {"age": 5, "index_date": "month_only"},
+            "closest_match_variables": ["region", "imd"],
+            "date_exclusion_variables": {"event_date": "1_year_earlier"},
+        }
+    )
+    cases = pd.DataFrame.from_records(
+        [{"index_date": "2025-01-01", "region": "South West", "age": 30}]
+    )
+    matches = pd.DataFrame.from_records(
+        [{"index_date": "2025-02-01", "region": "Londong"}]
+    )
+    errors = validate_input_data(cases, matches, config)
+    assert errors == {
+        "required_columns": [
+            "column(s) `event_date`, `imd` not found in cases dataset",
+            "column(s) `age`, `event_date`, `imd` not found in matches dataset",
+        ]
+    }
