@@ -6,8 +6,12 @@ from typing import Optional
 
 import pandas as pd
 
-from osmatching.utils import MatchConfig, report_config_errors, write_output_file
-from osmatching.validation import parse_and_validate_config, validate_input_data
+from osmatching.utils import MatchConfig, report_validation_errors, write_output_file
+from osmatching.validation import (
+    ValidationType,
+    parse_and_validate_config,
+    validate_input_data,
+)
 
 
 NOT_PREVIOUSLY_MATCHED = -9
@@ -222,12 +226,12 @@ def match(
     if not match_config.validated:
         match_config, errors = parse_and_validate_config(match_config)
         if errors:
-            report_config_errors(errors)
+            report_validation_errors(errors, validation_type=ValidationType.CONFIG)
             raise ValueError("There was an error in one or more config values")
 
     errors = validate_input_data(case_df, match_df, match_config)
     if errors:
-        report_config_errors(errors)
+        report_validation_errors(errors, validation_type=ValidationType.DATA)
         raise ValueError("Errors encountered in the input datasets")
 
     # Guaranteed by validation; assert not None to satisfy mypy

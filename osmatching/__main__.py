@@ -11,8 +11,9 @@ from osmatching.utils import (
     file_suffix,
     load_config,
     load_dataframe,
-    report_config_errors,
+    report_validation_errors,
 )
+from osmatching.validation import ValidationType
 
 
 class LoadMatchingConfig(argparse.Action):
@@ -30,7 +31,7 @@ class LoadMatchingConfig(argparse.Action):
 
         config, errors = load_config(config)
         if errors:
-            report_config_errors(errors)
+            report_validation_errors(errors, validation_type=ValidationType.CONFIG)
             sys.exit(2)
         setattr(namespace, self.dest, config)
 

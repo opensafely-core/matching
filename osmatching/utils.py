@@ -4,7 +4,7 @@ from typing import Any
 
 import pandas as pd
 
-from osmatching.validation import parse_and_validate_config
+from osmatching.validation import ValidationType, parse_and_validate_config
 
 
 @dataclass
@@ -86,8 +86,8 @@ def write_output_file(df, file_path):
     writer(file_path)
 
 
-def report_config_errors(errors):
-    print("\nErrors were found in the provided configuration:")
+def report_validation_errors(errors: dict[str, list], validation_type: ValidationType):
+    print(f"\nErrors were found in the provided {validation_type.value}:")
     for key, errorlist in errors.items():
         print(f"\n  {key}")
         for error in errorlist:

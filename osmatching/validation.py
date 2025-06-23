@@ -1,4 +1,5 @@
 from collections import defaultdict
+from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -12,6 +13,11 @@ if TYPE_CHECKING:  # pragma: no cover
     # https://peps.python.org/pep-0484/#forward-references
     # https://mypy.readthedocs.io/en/stable/runtime_troubles.html#import-cycles`
     from osmatching.utils import MatchConfig
+
+
+class ValidationType(Enum):
+    CONFIG = "configuration"
+    DATA = "input data"
 
 
 def validate_required_vars(config):
