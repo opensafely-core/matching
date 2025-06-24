@@ -2,12 +2,16 @@
 
 import copy
 from datetime import datetime
-from pathlib import Path
 from typing import Optional
 
 import pandas as pd
 
-from osmatching.utils import MatchConfig, write_output_file
+from osmatching.utils import MatchConfig, report_validation_errors, write_output_file
+from osmatching.validation import (
+    ValidationType,
+    parse_and_validate_config,
+    validate_input_data,
+)
 
 
 NOT_PREVIOUSLY_MATCHED = -9
@@ -21,6 +25,7 @@ def import_data(
     """
     Sets the correct data types for the matching variables.
     """
+    assert match_config.match_variables is not None  # guaranteed by validation
     match_variables = copy.deepcopy(match_config.match_variables)
     ## Set data types for matching variables
     month_only = []
@@ -52,7 +57,11 @@ def import_data(
         cases[var] = pd.to_datetime(cases[var])
         matches[var] = pd.to_datetime(matches[var])
 
-    ## Format index date as date
+    # If there is no index_date_variable in the matches df, add an empty column for it
+    if match_config.index_date_variable not in matches.columns:
+        matches[match_config.index_date_variable] = ""
+
+    ## Format index dates as date
     cases[match_config.index_date_variable] = pd.to_datetime(
         cases[match_config.index_date_variable]
     )
@@ -91,12 +100,10 @@ def get_bool_index(
     according to the matching specification.
     """
     if match_type == "category":
-        bool_index = matches[match_var] == value
-    elif isinstance(match_type, int):
-        bool_index = abs(matches[match_var] - value) <= match_type
+        return matches[match_var] == value
     else:
-        raise Exception(f"Matching type '{match_type}' not yet implemented")
-    return bool_index
+        assert isinstance(match_type, int), "Unknown matching type '{match_type}'"
+        return abs(matches[match_var] - value) <= match_type
 
 
 def pre_calculate_indices(
@@ -149,14 +156,14 @@ def date_exclusions(df1: pd.DataFrame, date_exclusion_variables: dict, index_dat
     """
     exclusions = pd.Series(data=False, index=df1.index)
     for exclusion_var, before_after in date_exclusion_variables.items():
-        if before_after == "before":
-            variable_bool = df1[exclusion_var] < index_date
-        elif before_after == "after":
-            variable_bool = df1[exclusion_var] > index_date
-        else:
-            raise Exception(
-                f"Date exclusion type '{before_after}' for variable '{exclusion_var}' invalid"
-            )
+        match before_after:
+            case "before":
+                variable_bool = df1[exclusion_var] < index_date
+            case "after":
+                variable_bool = df1[exclusion_var] > index_date
+            case _:  # pragma: no cover
+                # This should be caught in config validation so we should never get here
+                assert False, "Invalid date exclusion type"
         exclusions = exclusions | variable_bool
     return exclusions
 
@@ -174,6 +181,8 @@ def greedily_pick_matches(
     specified). If there are more than matches_per_case matches who are identical,
     matches are randomly sampled.
     """
+    # Ensure we're working with a copy of the matched_rows df
+    matched_rows = matched_rows.copy()
     if closest_match_variables:
         sort_cols: list = []
         for var in closest_match_variables:
@@ -186,26 +195,16 @@ def greedily_pick_matches(
     return matched_rows.index
 
 
-def get_date_offset(offset_str: str) -> Optional[pd.DataFrame]:
+def get_date_offset(offset: tuple[str, str, int]) -> Optional[pd.DataFrame]:
     """
-    Parses the string given by replace_match_index_date_with_case
-    to determine the unit and length of offset.
-    Returns a pr.DateOffset of the appropriate length.
+    Converts the tuple of unit and length given by match_index_date_offset
+    to return a pr.DateOffset of the appropriate length.
     """
-    if offset_str == "no_offset":
-        offset = None
+    unit, _, length = offset
+    if unit == "no_offset":
+        return None
     else:
-        length = int(offset_str.split("_")[0])
-        unit = offset_str.split("_")[1]
-        if unit in ("year", "years"):
-            offset = pd.DateOffset(years=length)
-        elif unit in ("month", "months"):
-            offset = pd.DateOffset(months=length)
-        elif unit in ("day", "days"):
-            offset = pd.DateOffset(days=length)
-        else:
-            raise Exception(f"Date offset '{unit}' not implemented")
-    return offset
+        return pd.DateOffset(**{unit: length})
 
 
 def match(
@@ -225,15 +224,28 @@ def match(
     - set the index date of the match as that of the case (where desired)
     - save the results in the specified output format
     """
+    # validate the config if we haven't already
+    if not match_config.validated:
+        match_config, errors = parse_and_validate_config(match_config)
+        if errors:
+            report_validation_errors(errors, validation_type=ValidationType.CONFIG)
+            raise ValueError("There was an error in one or more config values")
 
-    if match_config.min_matches_per_case > match_config.matches_per_case:
-        raise ValueError("min_matches_per_case cannot be greater than matches_per_case")
+    errors = validate_input_data(case_df, match_df, match_config)
+    if errors:
+        report_validation_errors(errors, validation_type=ValidationType.DATA)
+        raise ValueError("Errors encountered in the input datasets")
 
-    # Make sure the output path is a Path and it exists
-    output_path = Path(match_config.output_path)
-    output_path.mkdir(parents=True, exist_ok=True)
+    # Guaranteed by validation; assert not None to satisfy mypy
+    assert match_config.match_variables is not None
+    assert match_config.matches_per_case is not None
 
-    report_path = output_path / f"matching_report{match_config.output_suffix}.txt"
+    # Make sure the output path exists
+    match_config.output_path.mkdir(parents=True, exist_ok=True)
+
+    report_path = (
+        match_config.output_path / f"matching_report{match_config.output_suffix}.txt"
+    )
 
     def matching_report(text_list: list, erase: bool = False) -> None:
         if erase and report_path.is_file():
@@ -286,9 +298,8 @@ def match(
     indices = pre_calculate_indices(cases, matches, match_config.match_variables)
     matching_report([f"Completed pre-calculating indices at {datetime.now()}"])
 
-    if match_config.replace_match_index_date_with_case:
-        offset_str = match_config.replace_match_index_date_with_case
-        date_offset = get_date_offset(offset_str)
+    if match_config.match_index_date_offset:
+        date_offset = get_date_offset(match_config.match_index_date_offset)
 
     if match_config.date_exclusion_variables:
         case_exclusions = date_exclusions(
@@ -317,17 +328,19 @@ def match(
         matched_rows = matches.loc[eligible_matches]
 
         ## Determine match index date
-        if not match_config.replace_match_index_date_with_case:
+        if not match_config.match_index_date_offset:
             index_date = matched_rows[match_config.index_date_variable]
         else:
-            if offset_str == "no_offset":
+            unit, offset_type, _ = match_config.match_index_date_offset
+
+            if unit == "no_offset":
                 index_date = case_row[match_config.index_date_variable]
-            elif offset_str.split("_")[2] == "earlier":
+            elif offset_type == "earlier":
                 index_date = case_row[match_config.index_date_variable] - date_offset
-            elif offset_str.split("_")[2] == "later":
+            elif offset_type == "later":
                 index_date = case_row[match_config.index_date_variable] + date_offset
             else:
-                raise Exception(f"Date offset type '{offset_str}' not recognised")
+                assert False, f"Date offset type '{offset_type}' not recognised"
 
         ## Index date based match exclusions (faster to do this after get_eligible_matches)
         if match_config.date_exclusion_variables:
@@ -352,7 +365,7 @@ def match(
             matches.loc[matched_rows, "set_id"] = case_id
 
         ## Set index_date of the match where needed
-        if match_config.replace_match_index_date_with_case:
+        if match_config.generate_match_index_date:
             matches.loc[matched_rows, match_config.index_date_variable] = index_date
 
     ## Drop unmatched cases/matches
@@ -380,12 +393,18 @@ def match(
 
     ## Write output files
     file_suffix_ext = f"{match_config.output_suffix}.{match_config.output_format}"
-    write_output_file(matched_cases, output_path / f"matched_cases{file_suffix_ext}")
     write_output_file(
-        matched_matches, output_path / f"matched_matches{file_suffix_ext}"
+        matched_cases, match_config.output_path / f"matched_cases{file_suffix_ext}"
     )
-    combined = pd.concat([matched_cases, matched_matches])
-    write_output_file(combined, output_path / f"matched_combined{file_suffix_ext}")
+    write_output_file(
+        matched_matches, match_config.output_path / f"matched_matches{file_suffix_ext}"
+    )
+    combined = pd.concat(
+        [df for df in [matched_cases, matched_matches] if not df.empty]
+    )
+    write_output_file(
+        combined, match_config.output_path / f"matched_combined{file_suffix_ext}"
+    )
 
     # return the matched dataframes, for ease of testing
     return matched_cases, matched_matches

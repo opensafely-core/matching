@@ -14,7 +14,7 @@ from osmatching.osmatching import (
     match,
     pre_calculate_indices,
 )
-from osmatching.utils import MatchConfig, load_dataframe
+from osmatching.utils import MatchConfig, load_dataframe, parse_and_validate_config
 
 
 FIXTURE_PATH = Path(__file__).parent / "test_data" / "fixtures"
@@ -128,27 +128,6 @@ def test_match_min_matches_per_case(tmp_path, min_per_case, match_count):
         assert len(matched_matches[matched_matches.set_id == set_id]) >= min_per_case
 
 
-def test_match_min_matches_per_case_cannot_be_less_than_matches_per_case(tmp_path):
-    """Test that match() runs and produces a matching report and outputs."""
-    test_matching = {
-        "matches_per_case": 1,
-        "min_matches_per_case": 2,
-        "match_variables": {
-            "sex": "category",
-        },
-        "index_date_variable": "indexdate",
-        "output_path": tmp_path,
-    }
-    with pytest.raises(
-        ValueError, match="min_matches_per_case cannot be greater than matches_per_case"
-    ):
-        match(
-            case_df=load_dataframe(FIXTURE_PATH / "input_cases.csv"),
-            match_df=load_dataframe(FIXTURE_PATH / "input_controls.csv"),
-            match_config=MatchConfig(**test_matching),
-        )
-
-
 def test_match_closest_match_variables_empty(tmp_path):
     """Test that match() runs and produces a matching report and outputs."""
     test_matching = {
@@ -178,12 +157,12 @@ def test_match_closest_match_variables_empty(tmp_path):
     pd.testing.assert_frame_equal(matched_matches_1, matched_matches_2)
 
     test_matching.update({"closest_match_variables": None})
-    with pytest.raises(TypeError):
-        match(
-            case_df=load_dataframe(FIXTURE_PATH / "input_cases.csv"),
-            match_df=load_dataframe(FIXTURE_PATH / "input_controls.csv"),
-            match_config=MatchConfig(**test_matching),
-        )
+    # None values are converted to [] during validation
+    match(
+        case_df=load_dataframe(FIXTURE_PATH / "input_cases.csv"),
+        match_df=load_dataframe(FIXTURE_PATH / "input_controls.csv"),
+        match_config=MatchConfig(**test_matching),
+    )
 
 
 @pytest.mark.parametrize("drop_cases_from_matches", [True, False])
@@ -236,7 +215,7 @@ def test_match_drop_cases(tmp_path, drop_cases_from_matches):
         ("2_years_earlier", datetime(2018, 7, 29)),
     ],
 )
-def test_replace_match_index_date_with_case(tmp_path, offset, expected_indexdate):
+def test_generate_match_index_date(tmp_path, offset, expected_indexdate):
     test_matching = {
         "matches_per_case": 1,
         "match_variables": {
@@ -249,46 +228,52 @@ def test_replace_match_index_date_with_case(tmp_path, offset, expected_indexdate
         "index_date_variable": "indexdate",
         "output_path": tmp_path,
         "drop_cases_from_matches": True,
-        "replace_match_index_date_with_case": offset,
+        "generate_match_index_date": offset,
     }
 
     case_df = load_dataframe(FIXTURE_PATH / "input_cases.csv")
     match_df = load_dataframe(FIXTURE_PATH / "input_controls.csv")
-    _, matched_matches = match(
-        case_df,
-        match_df,
-        match_config=MatchConfig(**test_matching),
-    )
+    config = MatchConfig(**test_matching)
+    config, errors = parse_and_validate_config(config)
+    assert errors == {}
+    _, matched_matches = match(case_df, match_df, match_config=config)
 
     assert matched_matches.iloc[0].indexdate == expected_indexdate
 
 
-def test_replace_match_index_date_offset_error(tmp_path):
+def test_no_control_index_date(tmp_path):
+    # If match input data has no index date variable, one is added
     test_matching = {
-        "matches_per_case": 1,
-        "match_variables": {
-            "sex": "category",
-            "age": 1,
-            "region": "category",
-            "indexdate": "month_only",
-        },
-        "closest_match_variables": ["age"],
+        "matches_per_case": 3,
+        "match_variables": {"sex": "category"},
         "index_date_variable": "indexdate",
-        "drop_cases_from_matches": True,
-        "replace_match_index_date_with_case": "1_day_before",
         "output_path": tmp_path,
+        "generate_match_index_date": "no_offset",
     }
 
-    case_df = load_dataframe(FIXTURE_PATH / "input_cases.csv")
-    match_df = load_dataframe(FIXTURE_PATH / "input_controls.csv")
-    with pytest.raises(
-        Exception, match="Date offset type '1_day_before' not recognised"
-    ):
-        match(
-            case_df,
-            match_df,
-            match_config=MatchConfig(**test_matching),
-        )
+    case_df = pd.DataFrame.from_records(
+        [
+            [1, datetime(2021, 1, 1), "F"],
+            [2, datetime(2022, 2, 1), "M"],
+        ],
+        columns=["patient_id", "indexdate", "sex"],
+    )
+    match_df = pd.DataFrame.from_records(
+        [[4, "F"], [5, "M"], [6, "F"], [7, "M"], [8, "F"]],
+        columns=["patient_id", "sex"],
+    )
+    config, _ = parse_and_validate_config(MatchConfig(**test_matching))
+    _, matched_matches = match(
+        case_df,
+        match_df,
+        match_config=config,
+    )
+
+    # match index date is generated from the case
+    for f_index in [0, 2, 4]:
+        assert matched_matches.iloc[f_index].indexdate == datetime(2021, 1, 1)
+    for m_index in [1, 3]:
+        assert matched_matches.iloc[m_index].indexdate == datetime(2022, 2, 1)
 
 
 def test_categorical_get_bool_index():
@@ -321,17 +306,6 @@ def test_scalar_get_bool_index():
     bool_index = get_bool_index(match_type, value, match_var, matches)
 
     assert bool_index.equals(pd.Series([False, True, True, False, False]))
-
-
-def test_get_bool_index_unknown_match_tupe():
-    match_type = "foo"
-    value = 36
-    match_var = "value"
-    matches = pd.DataFrame.from_records(
-        [[30], [36], [39], [61], [75]], columns=["value"]
-    )
-    with pytest.raises(Exception, match="Matching type 'foo' not yet implemented"):
-        get_bool_index(match_type, value, match_var, matches)
 
 
 def test_pre_calculate_indices():
@@ -451,25 +425,6 @@ def test_date_exclusions():
     assert excl_ser.equals(pd.Series([True, True, False, True, False, True]))
 
 
-def test_date_exclusions_invalid_type():
-    df1 = pd.DataFrame.from_records(
-        [
-            {"died_date": "2019-03-12"},
-        ]
-    )
-    df1["died_date"] = pd.to_datetime(df1["died_date"])
-    date_exclusion_variables = {
-        "died_date": "on_or_before",
-    }
-    index_date = "2020-02-01"
-
-    with pytest.raises(
-        Exception,
-        match="Date exclusion type 'on_or_before' for variable 'died_date' invalid",
-    ):
-        date_exclusions(df1, date_exclusion_variables, index_date)
-
-
 def test_greedily_pick_matches():
     """
     Runs greedily_pick_matches on synthetic data and compares the test_data with
@@ -504,10 +459,10 @@ def test_get_date_offset():
     Tests that the pd.DateOffset produced by various combinations of input
     strings is correct.
     """
-    no_offset = get_date_offset("no_offset")
-    one_year_before = get_date_offset("1_year_before")
-    two_months_before = get_date_offset("2_months_before")
-    three_days_before = get_date_offset("3_days_before")
+    no_offset = get_date_offset(("no_offset", "", 0))
+    one_year_before = get_date_offset(("years", "before", 1))
+    two_months_before = get_date_offset(("months", "before", 2))
+    three_days_before = get_date_offset(("days", "before", 3))
 
     assert no_offset is None
     assert one_year_before == pd.DateOffset(years=1)
@@ -515,6 +470,14 @@ def test_get_date_offset():
     assert three_days_before == pd.DateOffset(days=3)
 
 
-def test_get_date_offset_invalid():
-    with pytest.raises(Exception, match="Date offset 'quarter' not implemented"):
-        get_date_offset("1_quarter_before")
+def test_match_with_config_errors():
+    cases = pd.DataFrame.from_records(
+        [{"patient_id": 1, "age": 36, "index_date": "2024-01-01"}]
+    )
+    matches = pd.DataFrame.from_records(
+        [{"patient_id": 2, "age": 30, "index_date": "2024-02-01"}]
+    )
+    with pytest.raises(
+        ValueError, match="There was an error in one or more config values"
+    ):
+        match(cases, matches, MatchConfig())

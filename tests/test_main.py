@@ -136,3 +136,71 @@ def test_config_bad_json():
 
     with pytest.raises(ArgumentTypeError, match="Could not parse {foo}"):
         main()
+
+
+def test_config_validation_errors(capsys):
+    sys.argv = [
+        "match",
+        "--cases",
+        str(FIXTURE_PATH / "input_cases.csv"),
+        "--controls",
+        str(FIXTURE_PATH / "input_controls.csv"),
+        "--config",
+        json.dumps(
+            {
+                "matches_per_case": 1,
+                "min_matches_per_case": 2,
+                "index_date_variable": "index_date",
+                "match_variables": {"age": 5},
+            }
+        ),
+    ]
+    with pytest.raises(SystemExit):
+        main()
+
+    output = capsys.readouterr().out
+    assert (
+        output
+        == """
+Errors were found in the provided configuration:
+
+  min_matches_per_case
+  * `min_matches_per_case` (2) cannot be greater than `matches_per_case` (1)
+
+Please correct these errors and try again
+"""
+    )
+
+
+def test_input_data_validation_errors(capsys):
+    sys.argv = [
+        "match",
+        "--cases",
+        str(FIXTURE_PATH / "input_cases.csv"),
+        "--controls",
+        str(FIXTURE_PATH / "input_controls.csv"),
+        "--config",
+        json.dumps(
+            {
+                "matches_per_case": 1,
+                "index_date_variable": "indexdate",
+                "match_variables": {"imd": 5},
+            }
+        ),
+    ]
+    with pytest.raises(ValueError):
+        main()
+
+    output = capsys.readouterr().out
+    assert (
+        output
+        == """
+Errors were found in the provided input data:
+
+  required_columns
+  * column(s) `imd` not found in cases dataset
+  * column(s) `imd` not found in matches dataset
+
+Please correct these errors and try again
+"""
+    )

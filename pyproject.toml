@@ -13,6 +13,8 @@ show_missing = true
 exclude_also = [
   # this condition is only true when a module is run as a script
   'if __name__ == "__main__":',
+  # this indicates that the line should never be hit
+  "assert False.*",
 ]
 
 [tool.coverage.html]

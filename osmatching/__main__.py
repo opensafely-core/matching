@@ -2,10 +2,18 @@
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 from osmatching.osmatching import match
-from osmatching.utils import MatchConfig, file_suffix, load_config, load_dataframe
+from osmatching.utils import (
+    MatchConfig,
+    file_suffix,
+    load_config,
+    load_dataframe,
+    report_validation_errors,
+)
+from osmatching.validation import ValidationType
 
 
 class LoadMatchingConfig(argparse.Action):
@@ -21,7 +29,10 @@ class LoadMatchingConfig(argparse.Action):
         except json.JSONDecodeError as exc:
             raise argparse.ArgumentTypeError(f"Could not parse {values}\n{exc}")
 
-        config = load_config(config)
+        config, errors = load_config(config)
+        if errors:
+            report_validation_errors(errors, validation_type=ValidationType.CONFIG)
+            sys.exit(2)
         setattr(namespace, self.dest, config)
 
 
