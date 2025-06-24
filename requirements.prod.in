@@ -1,0 +1,8 @@
+# Main prod requirements
+# Note: these are pinned to match the versions in the python:v2 docker image
+
+# To generate requirements file, run:
+# pip-compile --generate-hashes --output-file=requirements.prod.txt requirements.prod.in
+
+pandas==2.1.3
+pyarrow==14.0.1

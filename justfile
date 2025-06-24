@@ -40,9 +40,11 @@ _compile src dst *args: virtualenv
     $BIN/pip-compile --allow-unsafe --output-file={{ dst }} {{ src }} {{ args }}
 
 
+# update requirements.prod.txt if requirements.prod.in has changed
+requirements-prod *args: (_compile 'requirements.prod.in' 'requirements.prod.txt' args)
+
 # update requirements.dev.txt if requirements.dev.in has changed
 requirements-dev *args: (_compile 'requirements.dev.in' 'requirements.dev.txt' args)
-
 
 _install env:
     #!/usr/bin/env bash
@@ -59,7 +61,7 @@ _install env:
 # a killer feature over Makefiles.
 #
 # ensure dev requirements installed and up to date
-devenv: requirements-dev (_install 'dev')
+devenv: requirements-prod requirements-dev (_install 'prod') (_install 'dev')
 
 # upgrade dev dependencies (specify package to upgrade single package, all by default)
 upgrade env package="": virtualenv
@@ -71,11 +73,12 @@ upgrade env package="": virtualenv
     FORCE=true "{{ just_executable() }}" requirements-{{ env }} $opts
 
 
-# Upgrade all dev dependencies.
+# Upgrade all dependencies.
 # This is the default input command to update-dependencies action
 # https://github.com/bennettoxford/update-dependencies-action
 update-dependencies:
-    just upgrade dev
+    "{{ just_executable() }}" upgrade prod
+    "{{ just_executable() }}" upgrade dev
 
 # *args is variadic, 0 or more. This allows us to do `just test -k match`, for example.
 # Run the tests
