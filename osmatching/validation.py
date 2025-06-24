@@ -8,10 +8,10 @@ import pandas as pd
 
 if TYPE_CHECKING:  # pragma: no cover
     # We are avoiding circular dependencies by using forward references for
-    # type annotations where necessary, and this check so that type-checkin
+    # type annotations where necessary, and this check so that type-checking
     # imports are not executed at runtime.
     # https://peps.python.org/pep-0484/#forward-references
-    # https://mypy.readthedocs.io/en/stable/runtime_troubles.html#import-cycles`
+    # https://mypy.readthedocs.io/en/stable/runtime_troubles.html#import-cycles
     from osmatching.utils import MatchConfig
 
 
