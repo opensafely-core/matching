@@ -236,8 +236,7 @@ Match COVID population to pneumonia population with:
  - greedy matching on age 
  - excluding patients who died or had various outcomes before their index date
 ```py
-from osmatching import match
-from osmatching.utils import load_dataframe, load_config
+from osmatching import load_config, load_dataframe, match
 
 match(
     case_df=load_dataframe("input_covid.csv.gz"),
@@ -280,8 +279,7 @@ Match COVID population to general population from 2019 with:
  - excluding patients who died or had various outcomes before their index date
  - case/match groups where there isn't at least one match are excluded
 ```py
-from osmatching import match
-from osmatching.utils import load_dataframe, load_config
+from osmatching import load_config, load_dataframe, match
 
 match(
     case_df=load_dataframe("input_covid.csv.gz"),
@@ -324,7 +322,7 @@ Match COVID population to general population from 2020 with:
  - greedy matching on age 
  - excluding patients who died or had various outcomes before their index date
 ```py
-from osmatching.utils import load_dataframe, load_config
+from osmatching import load_config, load_dataframe, match
 
 match(
     case_df=load_dataframe("input_covid.csv.gz"),
