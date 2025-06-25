@@ -1,5 +1,3 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7691460.svg)](https://doi.org/10.5281/zenodo.7691460)
-
 > [!NOTE] 
 > The [`opensafely-matching` python package](https://pypi.org/project/opensafely-matching/) has been deprecated. If you are using this package
 > in an OpenSAFELY study, we recommend that you use the [matching reusable action](https://actions.opensafely.org/matching),
