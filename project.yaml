@@ -26,11 +26,11 @@ actions:
         "matches_per_case": 3,
         "match_variables": {
           "sex": "category",
-          "age": 5,
-          "indexdate": "month_only"
+          "age": 5
         },
         "index_date_variable": "indexdate",
-        "closest_match_variables": ["age"]
+        "closest_match_variables": ["age"],
+        "generate_match_index_date": "no_offset"
       }'
     needs: [generate_cases, generate_controls]
     outputs:

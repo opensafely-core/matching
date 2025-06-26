@@ -52,10 +52,10 @@ match:
       "match_variables": {
         "sex": "category",
         "age": 5,
-        "indexdate": "month_only"
       },
       "index_date_variable": "indexdate",
-      "closest_match_variables": ["age"]
+      "closest_match_variables": ["age"],
+      "generate_match_index_date": "no_offset"
     }'
   needs: [generate_cases, generate_controls]
   outputs:
@@ -102,10 +102,10 @@ config = {
     "match_variables": {
         "sex": "category",
         "age": 5,
-        "indexdate": "month_only"
     },
     "index_date_variable": "indexdate",
     "closest_match_variables": ["age"],
+    "generate_match_index_date": "no_offset"
 }
 
 Path("output/config.json").write_text(json.dumps(config, indent=2))
