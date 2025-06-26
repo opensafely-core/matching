@@ -27,6 +27,11 @@ def import_data(
     """
     assert match_config.match_variables is not None  # guaranteed by validation
     match_variables = copy.deepcopy(match_config.match_variables)
+
+    # If there is no index_date_variable in the matches df, add an empty column for it
+    if match_config.index_date_variable not in matches.columns:
+        matches[match_config.index_date_variable] = ""
+
     ## Set data types for matching variables
     month_only = []
     for var, match_type in match_variables.items():
@@ -56,10 +61,6 @@ def import_data(
     for var in match_config.date_exclusion_variables:
         cases[var] = pd.to_datetime(cases[var])
         matches[var] = pd.to_datetime(matches[var])
-
-    # If there is no index_date_variable in the matches df, add an empty column for it
-    if match_config.index_date_variable not in matches.columns:
-        matches[match_config.index_date_variable] = ""
 
     ## Format index dates as date
     cases[match_config.index_date_variable] = pd.to_datetime(

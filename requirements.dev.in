@@ -1,5 +1,5 @@
 # main functionality
--e file:.
+--constraint requirements.prod.txt
 
 # tooling and testing
 coverage

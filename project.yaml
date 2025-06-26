@@ -1,0 +1,64 @@
+version: "4.0"
+
+actions:
+  # These actions are copied-and-pasted into README.md for user-facing documentation.
+  # If you change them here, then please change them there.
+  generate_cases:
+    run: >
+      ehrql:v1 generate-dataset analysis/dataset_definition_cases.py --output output/cases.arrow
+    outputs:
+      highly_sensitive:
+        dataset: output/cases.arrow
+
+  generate_controls:
+    run: >
+      ehrql:v1 generate-dataset analysis/dataset_definition_controls.py --output output/controls.arrow
+    outputs:
+      highly_sensitive:
+        dataset: output/controls.arrow
+
+  match:
+    run: >
+      python:v2 python -m osmatching.__main__
+      --cases output/cases.arrow
+      --controls output/controls.arrow
+      --config '{
+        "matches_per_case": 3,
+        "match_variables": {
+          "sex": "category",
+          "age": 5
+        },
+        "index_date_variable": "indexdate",
+        "closest_match_variables": ["age"],
+        "generate_match_index_date": "no_offset"
+      }'
+    needs: [generate_cases, generate_controls]
+    outputs:
+      highly_sensitive:
+        matched_cases: output/matched_cases.arrow
+        matched_controls: output/matched_matches.arrow
+        matched_combined: output/matched_combined.arrow
+      moderately_sensitive:
+        report: output/matching_report.txt
+
+  write_config:
+    run: python:v2 analysis/write_matching_config.py
+    needs: [generate_cases, generate_controls]
+    outputs:
+      moderately_sensitive:
+        config: output/config.json
+
+  match_with_config_file:
+    run: >
+      python:v2 python -m osmatching.__main__
+      --cases output/cases.arrow
+      --controls output/controls.arrow
+      --config output/config.json
+    needs: [write_config, generate_cases, generate_controls]
+    outputs:
+      highly_sensitive:
+        matched_cases: output/matched_cases_with_config_file.arrow
+        matched_controls: output/matched_matches_with_config_file.arrow
+        matched_combined: output/matched_combined_with_config_file.arrow
+      moderately_sensitive:
+        report: output/matching_report_with_config_file.txt

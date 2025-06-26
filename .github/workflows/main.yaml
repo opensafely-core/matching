@@ -1,6 +1,11 @@
-name: Tests
+---
+name: CI
 
-on: [push]
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_call:
 
 permissions:
   contents: read
@@ -36,33 +41,10 @@ jobs:
       - name: Run tests
         run: just test
 
-  test-opensafely:
+  test-integration:
+    needs: [test]
     runs-on: ubuntu-latest
-    name: Run test suite with opensafely
-    
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Install opensafely
-        run: pip install opensafely
-      - name: Run tests with opensafely
-        run: opensafely exec python:v2 pytest
-
-  test-package-build:
-    runs-on: ubuntu-latest
-    name: Test we can build PyPI package
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.10"
-    - name: Install wheel package
-      run: |
-        pip install wheel
-    - name: Build package
-      run: |
-        python setup.py sdist bdist_wheel
+      - uses: opensafely-core/research-action@v2
