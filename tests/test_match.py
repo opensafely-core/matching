@@ -276,6 +276,40 @@ def test_no_control_index_date(tmp_path):
         assert matched_matches.iloc[m_index].indexdate == datetime(2022, 2, 1)
 
 
+def test_match_on_index_date_with_no_control_index_date(tmp_path):
+    # Regression test
+    # It doesn't make a lot of sense to match on index date if we're
+    # generating the match index date from the cases, but this test verifies
+    # that it doesn't break things if we do
+    test_matching = {
+        "matches_per_case": 3,
+        "match_variables": {"sex": "category", "indexdate": "month_only"},
+        "index_date_variable": "indexdate",
+        "output_path": tmp_path,
+        "generate_match_index_date": "no_offset",
+    }
+
+    case_df = pd.DataFrame.from_records(
+        [
+            [1, datetime(2021, 1, 1), "F"],
+            [2, datetime(2022, 2, 1), "M"],
+        ],
+        columns=["patient_id", "indexdate", "sex"],
+    )
+    match_df = pd.DataFrame.from_records(
+        [[4, "F"], [5, "M"], [6, "F"], [7, "M"], [8, "F"]],
+        columns=["patient_id", "sex"],
+    )
+    config, _ = parse_and_validate_config(MatchConfig(**test_matching))
+    _, matched_matches = match(
+        case_df,
+        match_df,
+        match_config=config,
+    )
+
+    assert matched_matches.empty
+
+
 def test_categorical_get_bool_index():
     """
     Runs get_eligible_matches on synthetic categorical data and compares the test_data
