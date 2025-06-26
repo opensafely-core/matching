@@ -14,7 +14,7 @@ concurrency: tag-new-version-group
 
 jobs:
   ci:
-    uses: ./.github/workflows/main.yml
+    uses: ./.github/workflows/main.yaml
 
   tag-new-version:
     needs: [ci]
