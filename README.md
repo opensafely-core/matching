@@ -69,7 +69,8 @@ match:
 
 This matches 3 matches per case, on the variables `sex`, and `age` (±5 years) and produces output files in the default `.arrow` format.
 
-Note: the `config` parameter is a json string in the above example, but can also be a path to a json file.
+Note: the `config` parameter is a json string in the above example.  Config can also be provided as a path
+to a json file, using the `config-file` option.
 When the action runs, it only has access to files that are the outputs of previous actions. We can use a json
 file by writing it in a preceding action, e.g.
 
@@ -86,7 +87,7 @@ match:
     matching:[version]
     --cases output/cases.arrow
     --controls output/controls.arrow
-    --config output/config.json
+    --config-file output/config.json
   needs: [write_config, generate_cases, generate_controls]
   outputs:
     ...

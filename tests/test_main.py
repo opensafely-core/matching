@@ -39,7 +39,7 @@ def cli_ouput_path(request, tmp_path):
         str(FIXTURE_PATH / f"input_cases.{output_format}"),
         "--controls",
         str(FIXTURE_PATH / f"input_controls.{output_format}"),
-        "--config",
+        "--config-file",
         str(tmp_path / "config.json"),
         "--output-format",
         output_format,
@@ -115,11 +115,13 @@ def test_config_non_existent_file():
         str(FIXTURE_PATH / "input_cases.csv"),
         "--controls",
         str(FIXTURE_PATH / "input_controls.csv"),
-        "--config",
+        "--config-file",
         "unknown/config.json",
     ]
 
-    with pytest.raises(ArgumentTypeError, match="Could not parse unknown/config.json"):
+    with pytest.raises(
+        ArgumentTypeError, match="Config file not found: unknown/config.json"
+    ):
         main()
 
 
@@ -136,6 +138,45 @@ def test_config_bad_json():
 
     with pytest.raises(ArgumentTypeError, match="Could not parse {foo}"):
         main()
+
+
+def test_config_file_bad_json(tmp_path):
+    config_path = tmp_path / "config.json"
+    config_path.write_text("{foo}")
+    sys.argv = [
+        "match",
+        "--cases",
+        str(FIXTURE_PATH / "input_cases.csv"),
+        "--controls",
+        str(FIXTURE_PATH / "input_controls.csv"),
+        "--config-file",
+        str(config_path),
+    ]
+
+    with pytest.raises(
+        ArgumentTypeError, match=f"Could not load json from config file: {config_path}"
+    ):
+        main()
+
+
+def test_config_string_and_file(capsys):
+    sys.argv = [
+        "match",
+        "--cases",
+        str(FIXTURE_PATH / "input_cases.csv"),
+        "--controls",
+        str(FIXTURE_PATH / "input_controls.csv"),
+        "--config-file",
+        str(FIXTURE_PATH / "config.json"),
+        "--config",
+        "{'foo': 'bar'}",
+    ]
+
+    with pytest.raises(SystemExit):
+        main()
+
+    output = capsys.readouterr().err
+    assert "argument --config: not allowed with argument --config-file" in output
 
 
 def test_config_validation_errors(capsys):
