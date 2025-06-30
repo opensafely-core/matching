@@ -16,24 +16,39 @@ from osmatching.utils import (
 from osmatching.validation import ValidationType
 
 
-class LoadMatchingConfig(argparse.Action):
+class BaseLoadMatchingConfig(argparse.Action):
+    def load_json(self, values):  # pragma: no cover
+        return NotImplemented
+
     def __call__(self, parser, namespace, values, option_string=None):
         # values can be a path to a file, or a json string
-        path = Path(values)
-        try:
-            if path.exists():
-                with path.open() as f:
-                    config = json.load(f)
-            else:
-                config = json.loads(values)
-        except json.JSONDecodeError as exc:
-            raise argparse.ArgumentTypeError(f"Could not parse {values}\n{exc}")
-
+        config = self.load_json(values)
         config, errors = load_config(config)
         if errors:
             report_validation_errors(errors, validation_type=ValidationType.CONFIG)
             sys.exit(2)
         setattr(namespace, self.dest, config)
+
+
+class LoadMatchingConfigString(BaseLoadMatchingConfig):
+    def load_json(self, values):
+        try:
+            return json.loads(values)
+        except json.JSONDecodeError as exc:
+            raise argparse.ArgumentTypeError(f"Could not parse {values}\n{exc}")
+
+
+class LoadMatchingConfigFile(BaseLoadMatchingConfig):
+    def load_json(self, values):
+        path = Path(values)
+        if not path.exists():
+            raise argparse.ArgumentTypeError(f"Config file not found: {values}")
+        try:
+            return json.loads(path.read_text())
+        except json.JSONDecodeError as exc:
+            raise argparse.ArgumentTypeError(
+                f"Could not load json from config file: {values}\n{exc}"
+            )
 
 
 class LoadDataframe(argparse.Action):
@@ -70,13 +85,19 @@ def main():
         description="Matches cases to controls if provided with 2 datasets"
     )
 
-    # add configuration arg
-
-    parser.add_argument(
+    # add configuration arg; one of config or config-file is required
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
         "--config",
-        required=True,
-        help="The configuration for the matching action",
-        action=LoadMatchingConfig,
+        help="The configuration for the matching action (a JSON string)",
+        action=LoadMatchingConfigString,
+        dest="config",
+    )
+    group.add_argument(
+        "--config-file",
+        help="Path to the configuration JSON file for the matching action",
+        action=LoadMatchingConfigFile,
+        dest="config",
     )
 
     # Cases
