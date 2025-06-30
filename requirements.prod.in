@@ -4,5 +4,5 @@
 # To generate requirements file, run:
 # pip-compile --generate-hashes --output-file=requirements.prod.txt requirements.prod.in
 
-pandas==2.1.3
+pandas==2.3.0
 pyarrow==14.0.1
