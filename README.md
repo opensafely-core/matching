@@ -43,21 +43,20 @@ Then, the following action uses the `matching`reusable action to perform the mat
 
 ```yaml
 match:
+  needs: [generate_cases, generate_controls]
   run: >
     matching:[version]
     --cases output/cases.arrow
     --controls output/controls.arrow
-    --config '{
-      "matches_per_case": 3,
-      "match_variables": {
-        "sex": "category",
-        "age": 5,
-      },
-      "index_date_variable": "indexdate",
-      "closest_match_variables": ["age"],
-      "generate_match_index_date": "no_offset"
-    }'
-  needs: [generate_cases, generate_controls]
+  config:
+    matches_per_case: 3
+    match_variables:
+      sex: category
+      age: 5
+      index_date_variable: indexdate
+      closest_match_variables:
+        - age
+      generate_match_index_date: no_offset
   outputs:
     highly_sensitive:
       matched_cases: output/matched_cases.arrow
@@ -69,8 +68,7 @@ match:
 
 This matches 3 matches per case, on the variables `sex`, and `age` (±5 years) and produces output files in the default `.arrow` format.
 
-Note: the `config` parameter is a json string in the above example.  Config can also be provided as a path
-to a json file, using the `config-file` option.
+Note: the `config` option can also be provided as a path to a json file, using the `config-file` option.
 When the action runs, it only has access to files that are the outputs of previous actions. We can use a json
 file by writing it in a preceding action, e.g.
 
@@ -267,25 +265,23 @@ match:
     matching:[version]
     --cases output/input_covid.csv.gz
     --controls output/input_pneumonia.csv.gz
-    --config '{
-      "matches_per_case": 1,
-      "match_variables": {
-        "sex": "category",
-        "age": 1,
-        "stp": "category",
-        "indexdate": "month_only"
-      },
-      "index_date_variable": "indexdate",
-      "closest_match_variables": ["age"],
-      "date_exclusion_variables": {
-        "died_date_ons": "before",
-        "previous_vte_gp": "before",
-        "previous_vte_hospital": "before",
-        "previous_stroke_gp": "before",
-        "previous_stroke_hospital": "before",
-      },
-      "output_suffix": "_pneumonia"
-    }'
+  config:
+    matches_per_case: 1
+    match_variables:
+      sex: category
+      age: 5
+      stp: category
+      indexdate: month_only
+    index_date_variable: indexdate
+    closest_match_variables:
+      - age
+    date_exclusion_variables:
+      died_date_ons: before
+      previous_vte_gp: before
+      previous_vte_hospital: before
+      previous_stroke_gp: before
+      previous_stroke_hospital: before
+    output_suffix: _pneumonia
   outputs:
     highly_sensitive:
       matched_cases: output/matched_cases_pneumonia.arrow
@@ -310,26 +306,24 @@ match:
     matching:[version]
     --cases output/input_covid.csv.gz
     --controls output/input_control_2019.csv.gz
-    --config '{
-      "matches_per_case": 2,
-      "match_variables": {
-        "sex": "category",
-        "age": 1,
-        "stp": "category",
-      },
-      "index_date_variable": "indexdate",
-      "closest_match_variables": ["age"],
-      "min_matches_per_case": 1,
-      "generate_match_index_date: "1_year_earlier",
-      "date_exclusion_variables": {
-        "died_date_ons": "before",
-        "previous_vte_gp": "before",
-        "previous_vte_hospital": "before",
-        "previous_stroke_gp": "before",
-        "previous_stroke_hospital": "before",
-      },
-      "output_suffix": "_control_2019"
-    }'
+  config:
+    matches_per_case: 2
+    match_variables:
+      sex: category
+      age: 1
+      stp: category
+    index_date_variable: indexdate
+    closest_match_variables:
+      - age
+    min_matches_per_case: 1
+    generate_match_index_date: 1_year_earlier
+    date_exclusion_variables:
+      died_date_ons: before
+      previous_vte_gp: before
+      previous_vte_hospital: before
+      previous_stroke_gp: before
+      previous_stroke_hospital: before
+    output_suffix: _control_2019
   outputs:
     highly_sensitive:
       matched_cases: output/matched_cases_control_2019.arrow
@@ -353,26 +347,24 @@ match:
     matching:[version]
     --cases output/input_covid.csv.gz
     --controls output/input_control_2020.csv.gz
-    --config '{
-      "matches_per_case": 2,
-      "match_variables": {
-        "sex": "category",
-        "age": 1,
-        "stp": "category",
-      },
-      "index_date_variable": "indexdate",
-      "closest_match_variables": ["age"],
-      "min_matches_per_case": 1,
-      "generate_match_index_date": "no_offset",
-      "date_exclusion_variables": {
-        "died_date_ons": "before",
-        "previous_vte_gp": "before",
-        "previous_vte_hospital": "before",
-        "previous_stroke_gp": "before",
-        "previous_stroke_hospital": "before",
-      },
-      "output_suffix": "_control_2019"
-    }'
+  config:
+    matches_per_case: 2
+    match_variables:
+      sex: category
+      age: 1
+      stp: category
+    index_date_variable: indexdate
+    closest_match_variables:
+      - age
+    min_matches_per_case: 1
+    generate_match_index_date: no_offset
+    date_exclusion_variables:
+      died_date_ons: before
+      previous_vte_gp: before
+      previous_vte_hospital: before
+      previous_stroke_gp: before
+      previous_stroke_hospital: before
+    output_suffix: _control_2020
   outputs:
     highly_sensitive:
       matched_cases: output/matched_cases_control_2020.arrow
